@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Clínica Veterinaria</title>
+        <link rel="stylesheet" href="css/sidebar.css" type="text/css">
+        <link rel="stylesheet" href="css/letras.css" type="text/css">
+
+    </head>
+    <body>
+
+        <!-- Botón hamburguesa -->
+        <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+
+        <!-- Menú lateral -->
+        <nav class="sidebar" id="sidebar">
+            <ul class="sidebar-list">
+                <li><a href="#">Ofertas</a></li>
+                <li><a href="#">Destacados</a></li>
+                <hr>
+                <li><a href="#">Estética y baño</a></li>
+                <li><a href="#">Alimentos</a></li>
+                <li><a href="#">Accesorios</a></li>
+                <li><a href="#">Farmacia</a></li>
+            </ul>
+        </nav>
+
+        <!-- Carrusel -->
+        <section class="carrusel-container">
+            <div class="carrusel" id="carrusel">
+                <div class="carrusel-item"><img src="img/extras/doge.jpg" alt="Consulta veterinaria" class="img"></div>
+                <div class="carrusel-item"><img src="img/extras/Fairy Tail 2.png" alt="Vacunación de mascotas" class="img"></div>
+                <div class="carrusel-item"><img src="img/extras/doge.jpg" alt="Estética y baño para mascotas" class="img"></div>
+                <div class="carrusel-item"><img src="img/extras/Fairy Tail 2.png" alt="Alimentos para perros y gatos" class="img"></div>
+            </div>
+        </section>
+
+        <!-- Contenido ejemplo -->
+        <main class="contenido">
+            <n1>Bienvenidos a la Clínica Veterinaria</n1>
+            <p> <n1>Ofrecemos servicios especializados para el cuidado de tus mascotas. </n1></p>
+            <div class="productos">
+                <div class="producto">Croquetas Premium</div>
+                <div class="producto">Collares y correas</div>
+                <div class="producto">Juguetes para perros y gatos</div>
+                <div class="producto">Medicamentos veterinarios</div>
+            </div>
+        </main>
+
+        <script>
+            // Toggle menú
+            const toggleBtn = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+
+            // Carrusel automático
+            let index = 0;
+            const items = document.querySelectorAll('.carrusel-item');
+            function showSlide() {
+                items.forEach(item => item.style.display = 'none');
+                items[index].style.display = 'block';
+                index = (index + 1) % items.length;
+                setTimeout(showSlide, 3000);
+            }
+            showSlide();
+        </script>
+
+    </body>
+</html>

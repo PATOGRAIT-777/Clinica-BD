@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Catálogo — AnimeAV1</title>
+  <link rel="stylesheet" href="css/universalCss.css" type="text/css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/">Clinica</a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="active" href="initPag.html">Inicio</a>
+        <a href="prodCatalog.html">Tienda</a>
+        <a href="horario.html">Disponibilidad</a>
+        <a href="listas.html">Mis mascotas</a>
+        <a href="regUser.html">Mi cuenta</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-ghost">Registrarse</button>
+        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Catálogo</h1>
+      <p class="muted">Explora todos los animes disponibles.</p>
+    </div>
+  </section>
+
+  <main class="container layout">
+    <aside class="sidebar">
+      <div class="profile-card">
+        <div class="avatar">PA</div>
+        <div class="profile-info">
+          <strong>Patograit A.</strong>
+          <small>Usuario</small>
+        </div>
+      </div>
+      <nav class="account-nav">
+        <a href="cuenta.html">Mi cuenta</a>
+        <a href="listas.html">Mis listas</a>
+        <a href="catalogo.html" class="is-active">Catálogo</a>
+      </nav>
+    </aside>
+
+    <section class="main">
+      <article class="card">
+        <h2>Todos los animes</h2>
+        <div class="grid-cards">
+          <!-- tarjetas de anime -->
+          <a href="#" class="card-item">
+            <img src="poster3.jpg" alt="Anime X">
+            <div class="card-body"><h3>Anime X</h3><p>Genero</p></div>
+          </a>
+          <!-- más -->
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
+
+  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
+</body>
+</html>

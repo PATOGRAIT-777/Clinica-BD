@@ -1,0 +1,88 @@
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mis mascotas — TechSide</title>
+  <link rel="stylesheet" href="css/universalCss.css" type="text/css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/">Clinica</a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a  href="initPag.html">Inicio</a>
+        <a href="prodCatalog.html">Tienda</a>
+        <a href="horario.html">Disponibilidad</a>
+        <a class="active" href="listas.html">Mis mascotas</a>
+        <a href="regUser.html">Mi cuenta</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-ghost">Registrarse</button>
+        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Mis listas</h1>
+      <p class="muted">Tus mascotas guardadas, sus datos, etc.</p>
+    </div>
+  </section>
+
+  <main class="container layout">
+    <aside class="sidebar">
+      <div class="profile-card">
+        <div class="avatar">PA</div>
+        <div class="profile-info">
+          <strong>Patograit A.</strong>
+          <small>Usuario</small>
+        </div>
+      </div>
+      <nav class="account-nav">
+        <a href="regUser.html">Mi cuenta</a>
+        <a class="is-active" href="listas.html">Mis Mascotas</a>
+      </nav>
+    </aside>
+
+    <section class="main">
+      <article class="card">
+        <h2>Registrados</h2>
+        <div class="grid-cards">
+          <a href="#" class="card-item">
+            <img src="img/extras/doge.jpg" alt="Favorito 1">
+            <div class="card-body"><h3>Firulais</h3></div>
+          </a>
+          <a href="#" class="card-iteminfo">
+            <div class="card-body"><h3>Edad:</h3></div>
+            <div class="card-body"><h3>Especie y raza:</h3></div>
+            <div class="card-body"><h3>Fecha de nacimiento:</h3></div>
+            <div class="card-body"><h3>Sexo:</h3></div>
+            <div class="card-body"><h3>Tamano:</h3></div>
+            <div class="card-body"><h3>Tipo, color y patron de pelo:</h3></div>
+            <div class="card-body"><h3>Esterilizado:</h3></div>
+            <div class="card-body"><h3>Cuadro de vacunacion:</h3></div>
+            <div class="card-body"><h3>Fecha de ultima desparasitacion:</h3></div>
+            <div class="card-body"><h3>RUAC:</h3></div>
+          </a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Registrar Mascota</h2>
+        <div class="grid-cards">
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
+
+  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
+</body>
+</html>
