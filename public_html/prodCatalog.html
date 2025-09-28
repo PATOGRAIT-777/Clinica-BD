@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Catálogo — AnimeAV1</title>
   <link rel="stylesheet" href="css/universalCss.css" type="text/css">
+          <link rel="stylesheet" href="css/sidebar.css" type="text/css">
+        <link rel="stylesheet" href="css/letras.css" type="text/css">
+          
+
+
 </head>
 <body>
   <header class="site-header">
@@ -24,44 +29,63 @@
     </div>
   </header>
 
-  <section class="hero">
-    <div class="container">
-      <h1>Catálogo</h1>
-      <p class="muted">Explora todos los animes disponibles.</p>
-    </div>
-  </section>
+<!-- Botón hamburguesa -->
+        <button class="menu-toggle" id="menu-toggle">&#9776;</button>
 
-  <main class="container layout">
-    <aside class="sidebar">
-      <div class="profile-card">
-        <div class="avatar">PA</div>
-        <div class="profile-info">
-          <strong>Patograit A.</strong>
-          <small>Usuario</small>
-        </div>
-      </div>
-      <nav class="account-nav">
-        <a href="cuenta.html">Mi cuenta</a>
-        <a href="listas.html">Mis listas</a>
-        <a href="catalogo.html" class="is-active">Catálogo</a>
-      </nav>
-    </aside>
+        <!-- Menú lateral -->
+        <nav class="sidebar" id="sidebar">
+            <ul class="sidebar-list">
+                <li><a href="#">Ofertas</a></li>
+                <li><a href="#">Destacados</a></li>
+                <hr>
+                <li><a href="#">Estética y baño</a></li>
+                <li><a href="#">Alimentos</a></li>
+                <li><a href="#">Accesorios</a></li>
+                <li><a href="#">Farmacia</a></li>
+            </ul>
+        </nav>
 
-    <section class="main">
-      <article class="card">
-        <h2>Todos los animes</h2>
-        <div class="grid-cards">
-          <!-- tarjetas de anime -->
-          <a href="#" class="card-item">
-            <img src="poster3.jpg" alt="Anime X">
-            <div class="card-body"><h3>Anime X</h3><p>Genero</p></div>
-          </a>
-          <!-- más -->
-        </div>
-      </article>
-    </section>
-  </main>
+        <!-- Carrusel -->
+        <section class="carrusel-container">
+            <div class="carrusel" id="carrusel">
+                <div class="carrusel-item"><img src="img/extras/doge.jpg" alt="Consulta veterinaria" class="img"></div>
+                <div class="carrusel-item"><img src="img/extras/Fairy Tail 2.png" alt="Vacunación de mascotas" class="img"></div>
+                <div class="carrusel-item"><img src="img/extras/doge.jpg" alt="Estética y baño para mascotas" class="img"></div>
+                <div class="carrusel-item"><img src="img/extras/Fairy Tail 2.png" alt="Alimentos para perros y gatos" class="img"></div>
+            </div>
+        </section>
 
+        <!-- Contenido ejemplo -->
+        <main class="contenido">
+            <n1>Bienvenidos a la Tienda</n1>
+            <p> <n1>Ofrecemos productos especializados para el cuidado de tus mascotas. </n1></p>
+            <div class="productos">
+                <div class="producto">Croquetas Premium</div>
+                <div class="producto">Collares y correas</div>
+                <div class="producto">Juguetes para perros y gatos</div>
+                <div class="producto">Medicamentos veterinarios</div>
+            </div>
+        </main>
+        
+                  <script>
+            // Toggle menú
+            const toggleBtn = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+            });
+
+            // Carrusel automático
+            let index = 0;
+            const items = document.querySelectorAll('.carrusel-item');
+            function showSlide() {
+                items.forEach(item => item.style.display = 'none');
+                items[index].style.display = 'block';
+                index = (index + 1) % items.length;
+                setTimeout(showSlide, 5000);
+            }
+            showSlide();
+        </script>
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>© <span id="year"></span> TechSide</p>
