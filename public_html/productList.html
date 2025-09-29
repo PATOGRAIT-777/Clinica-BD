@@ -9,7 +9,58 @@
         <link rel="stylesheet" href="css/universalCss.css" type="text/css">
         <link rel="stylesheet" href="css/divs.css" type="text/css">
     </head>
+    
+        <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+      <div class="login-content">
+        <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+        <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
+        <form class="login-form">
+          <h2>Iniciar Sesión</h2>
+          <input type="text" placeholder="Usuario">
+          <input type="password" placeholder="Contraseña">
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
+    </div>
+
+    <script> 
+        function openLogin() {
+          document.getElementById('login-modal').style.display = 'flex';
+        }
+
+        function closeLogin() {
+          document.getElementById('login-modal').style.display = 'none';
+        }
+
+        // Cierra si se hace clic fuera del cuadro de login
+        function closeOnOutsideClick(event) {
+          const modal = document.getElementById('login-modal');
+          const box = modal.querySelector('.login-box');
+
+          if (!box.contains(event.target)) {
+            closeLogin();
+          }
+        }
+    </script>
+    
     <body>
+        
+          <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/">Clinica</a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="active" href="initPag.html">Inicio</a>
+        <a href="prodCatalog.html">Tienda</a>
+        <a href="horario.html">Disponibilidad</a>
+        <a href="listas.html">Mis mascotas</a>
+        <a href="regUser.html">Mi cuenta</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-ghost" >Registrarse</button>
+        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+      </div>
+    </div>
+  </header>
 
         <!-- Botón hamburguesa -->
         <button class="menu-toggle" id="menu-toggle">&#9776;</button>
