@@ -1,145 +1,277 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Registrar Mascotas — TechSide</title>
-  <link rel="stylesheet" href="css/universalCss.css" type="text/css">
-  <link rel="stylesheet" href="css/divs.css" type="text/css">
-  <link rel="stylesheet" href="css/pInicio.css" type="text/css">
-  <link rel="stylesheet" href="css/initSes.css" type="text/css">
-</head>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Registrar Mascotas — TechSide</title>
+        <link rel="stylesheet" href="css/universalCss.css" type="text/css">
+        <link rel="stylesheet" href="css/divs.css" type="text/css">
+        <link rel="stylesheet" href="css/pInicio.css" type="text/css">
+        <link rel="stylesheet" href="css/initSes.css" type="text/css">
+    </head>
 
     <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-      <div class="login-content">
-        <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-        <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
-        <form class="login-form">
-          <h2>Iniciar Sesión</h2>
-          <input type="text" placeholder="Usuario">
-          <input type="password" placeholder="Contraseña">
-          <button type="submit">Entrar</button>
-        </form>
-      </div>
+        <div class="login-content">
+            <span class="close" onclick="document.getElementById('login-modal').style.display = 'none'">&times;</span>
+            <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
+            <form class="login-form">
+                <h2>Iniciar Sesión</h2>
+                <input type="text" placeholder="Usuario">
+                <input type="password" placeholder="Contraseña">
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
     </div>
 
-    <script> 
+    <script>
         function openLogin() {
-          document.getElementById('login-modal').style.display = 'flex';
+            document.getElementById('login-modal').style.display = 'flex';
         }
 
         function closeLogin() {
-          document.getElementById('login-modal').style.display = 'none';
+            document.getElementById('login-modal').style.display = 'none';
         }
 
         // Cierra si se hace clic fuera del cuadro de login
         function closeOnOutsideClick(event) {
-          const modal = document.getElementById('login-modal');
-          const box = modal.querySelector('.login-box');
+            const modal = document.getElementById('login-modal');
+            const box = modal.querySelector('.login-box');
 
-          if (!box.contains(event.target)) {
-            closeLogin();
-          }
+            if (!box.contains(event.target)) {
+                closeLogin();
+            }
         }
-        
+
         function regValNum(event) {
-        const numeros = "1234567890";
-        const tecla = String.fromCharCode(event.which || event.keyCode);
-        if (numeros.indexOf(tecla) === -1) { alert("Por favor, ingresa solo números"); return false; }
-        return true;
+            const numeros = "1234567890";
+            const tecla = String.fromCharCode(event.which || event.keyCode);
+            if (numeros.indexOf(tecla) === -1) {
+                alert("Por favor, ingresa solo números");
+                return false;
+            }
+            return true;
         }
 
         function regValText(event) {
-        const letras = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ ";
-        const tecla = String.fromCharCode(event.which || event.keyCode);
-        if (letras.indexOf(tecla) === -1) { alert("Por favor, ingresa solo texto"); return false; }
-        return true;
+            const letras = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ ";
+            const tecla = String.fromCharCode(event.which || event.keyCode);
+            if (letras.indexOf(tecla) === -1) {
+                alert("Por favor, ingresa solo texto");
+                return false;
+            }
+            return true;
         }
     </script>
-<body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="/">Clinica</a>
-      <nav class="main-nav" aria-label="Navegación principal">
-        <a href="initPag.html">Inicio</a>
-        <a href="prodCatalog.html">Tienda</a>
-        <a href="horario.html">Disponibilidad</a>
-        <a href="listas.html">Mis mascotas</a>
-        <a href="regUser.html">Mi cuenta</a>
-      </nav>
-      <div class="header-actions">
-          <a class="active" href="initPag.html">Registrarse</a>
-          <!--<button class="btn-ghost">Registrarse</button>-->
-          <button class="btn-primary" onclick="openLogin()">Entrar</button>
-      </div>
-    </div>
-  </header>
+    <body>
+        <header class="site-header">
+            <div class="container header-inner">
+                <a class="brand" href="/">Clinica</a>
+                <nav class="main-nav" aria-label="Navegación principal">
+                    <a href="initPag.html">Inicio</a>
+                    <a href="prodCatalog.html">Tienda</a>
+                    <a href="horario.html">Disponibilidad</a>
+                    <a href="listas.html">Mis mascotas</a>
+                    <a href="regUser.html">Mi cuenta</a>
+                </nav>
+                <div class="header-actions">
+                    <a class="active" href="initPag.html">Registrarse</a>
+                    <!--<button class="btn-ghost">Registrarse</button>-->
+                    <button class="btn-primary" onclick="openLogin()">Entrar</button>
+                </div>
+            </div>
+        </header>
 
         <section id="reg-section">
-              <div class="reg-container">
+            <div class="reg-container">
 
-                <!-- Registro -->
-                <div class="reg-card">
-                  <h2>Regístra tu mascota</h2>
-                  <form method="post" action="desplegar.jsp" class="form-size">
-                    
-                    <input type="text" name="usr" placeholder="Nombre" onkeypress="return regValText(event)" required>
-                    <input type="text" name="nom" placeholder="Especie" onkeypress="return regValText(event)" required>
-                    <select name="Identifier" required>
-                      <option value="0">Raza</option>
-                      <option value="0">Cliente</option>
-                      <option value="0">Administrador</option>
-                      <option value="0">Cliente</option>
-                      <option value="0">Administrador</option>
-                      <option value="0">Cliente</option>
-                      <option value="0">Administrador</option>
-                      <option value="0">Cliente</option>
-                      <option value="0">Administrador</option>
-                      <option value="0">Cliente</option>
-                    </select>
-                    <input type="text" name="date" placeholder="Fecha de nacimiento (si se conoce)">  
-                    <input type="date" name="date">
-                    <select name="Identifier" required>
-                      <option value="0">Macho</option>
-                      <option value="1">Hembra</option>
-                    </select>
-                    <input type="email" name="email" placeholder="Tamano" required>
-                    <input type="text" name="tel" placeholder="Tipo de pelo" onkeypress="return regValNum(event)" required>
-                    <input type="text" name="tel" placeholder="Color de pelo" onkeypress="return regValNum(event)" required>
-                    <input type="text" name="tel" placeholder="Patron de pelo" onkeypress="return regValNum(event)" required>
+                <!-- Un solo formulario que engloba ambas tarjetas -->
+                <form method="post" action="desplegar.jsp" class="form-size" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;width:100%;">
 
-                  </form>
-                </div>
+                    <!-- Primera tarjeta -->
+                    <div class="reg-card">
+                        <h2>Datos generales</h2>
 
-                <!-- Inicio de sesión -->
-                <div class="reg-card">
-                  <h2>Regístra tu mascota</h2>
-                  <form method="post" action="valUsr.jsp">
-                    <input type="text" name="usr" placeholder="Cuadro de vacunacion" required>
-                    <input type="file" name="usr" placeholder="Cuadro de vacunacion" required>
-                    <input type="text" name="pass" placeholder="Fecha de ultima desparasitacion" required>
-                    <input type="date" name="pass" placeholder="Contraseña" required>
-                    <input type="text" name="pass" placeholder="RUAC (Si tiene)" required>
-                    <input type="date" name="pass" placeholder="Contraseña" required>
-                    <input type="text" name="pass" placeholder="Sube una imagen de tu mascota" required>
-                    <input type="file" name="pass" placeholder="Contraseña" required>
-                    <button type="submit" class="reg-btn-submit">Registrarse</button>
-                  </form>
-                </div>
+                        <select id="tipo" required>
+                            <option value="">-- Selecciona tipo --</option>
+                            <option value="perro">🐶 Perro</option>
+                            <option value="gato">🐱 Gato</option>
+                            <option value="ave">🦜 Ave</option>
+                            <option value="reptil">🦎 Reptil</option>
+                        </select>
 
-              </div>
-            </section>
+                        <!-- Campos comunes -->
+                        <input type="text" id="nombre" placeholder="Nombre" class="hidden" required>
+                        <input type="text" id="color" placeholder="Color" class="hidden" required>
+                        <input type="text" id="senas" placeholder="Señas particulares" class="hidden">
+                        <input type="number" id="edad" placeholder="Edad" class="hidden" required>
+                        <input type="text" id="estadoSalud" placeholder="Estado de salud" class="hidden">
+                        <input type="text" id="vacunas" placeholder="Vacunas" class="hidden">
+                        <input type="text" id="esterilizacion" placeholder="Esterilización" class="hidden">
+                        <input type="text" id="microchip" placeholder="Número de microchip" class="hidden">
 
-            
+                        <!-- Campos específicos por tipo -->
+                        <!-- Perro -->
+                        <select id="raza" class="hidden">
+                            <option value="">-- Selecciona raza --</option>
+                        </select>
+                        <input type="text" id="tamano" placeholder="Tamaño" class="hidden">
+                        <input type="text" id="tipoPelo" placeholder="Tipo de pelo" class="hidden">
+                        <input type="text" id="colorPelo" placeholder="Color de pelo" class="hidden">
+
+                        <!-- Gato -->
+                        <input type="text" id="colorOjos" placeholder="Color de ojos" class="hidden">
+                        <input type="text" id="tipoPeloGato" placeholder="Tipo de pelo" class="hidden">
+
+                        <!-- Ave -->
+                        <select id="especie" class="hidden">
+                            <option value="">-- Selecciona especie --</option>
+                        </select>
+                        <input type="text" id="envergadura" placeholder="Envergadura" class="hidden">
+                        <input type="text" id="colorPlumas" placeholder="Color de plumas" class="hidden">
+
+                        <!-- Reptil -->
+                        <input type="text" id="especieReptil" placeholder="Especie" class="hidden">
+                        <input type="text" id="longitud" placeholder="Longitud" class="hidden">
+                        <input type="text" id="temperaturaHabitat" placeholder="Temperatura del hábitat" class="hidden">
+
+                        <!-- Fotografías obligatorias -->
+                        <input type="file" id="fotoFrontal" accept="image/*" class="hidden" required>
+                        <input type="file" id="fotoLateral" accept="image/*" class="hidden" required>
+                        <input type="file" id="fotoConTutor" accept="image/*" class="hidden" required>
 
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p>© <span id="year"></span> TechSide</p>
-      <small class="muted">Términos y condiciones · Política de privacidad</small>
-    </div>
-  </footer>
 
-  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
-</body>
+                    </div>
+
+                    <!-- Segunda tarjeta -->
+                    <div class="reg-card">
+                        <h2>Historial médico</h2>
+                        <label>Cuadro de vacunación:</label>
+                        <input type="file" name="vacunas" required>
+                        <label>Fecha de última desparasitación:</label>
+                        <input type="date" name="desparasitacion">
+                        <input type="text" name="ruac" placeholder="RUAC (si tiene)">
+                        <label>Imagen de tu mascota:</label>
+                        <input type="file" name="foto_mascota" required>
+
+
+
+
+                        <button type="submit" class="reg-btn-submit">Registrar Mascota</button>
+                    </div>
+
+                </form>
+            </div>
+        </section>
+
+
+
+
+
+        <footer class="site-footer">
+            <div class="container footer-inner">
+                <p>© <span id="year"></span> TechSide</p>
+                <small class="muted">Términos y condiciones · Política de privacidad</small>
+            </div>
+        </footer>
+
+        <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
+        <script>
+            const razas = {
+                "perro": ["Affenpinscher", "Afgano", "Akita japonés", "American Staffordshire Terrier", "Basenji", "Basset Azul de Gascuña", "Basset Grifón vandeano pequeño", "Basset Hound", "Basset leonado de Bretaña", "Beagle",
+                    "Beauceron", "Bedlington Terrier", "Bergamasco", "Bichón Boloñés", "Bichón frisé", "Bloodhound", "Bobtail antiguo perro pastor inglés", "Bodeguero Andaluz", "Border collie", "Border terrier",
+                    "Borzoi", "Boston Terrier", "Bóxer", "Boyero de Berna", "Boyero de Flandes", "Bracco italiano", "Braco alemán de pelo corto", "Braco alemán de pelo duro", "Braco de Weimar de pelo corto y suave", "Braco húngaro",
+                    "Braco húngaro de pelo duro", "Bretón", "Buhund noruego", "Bull Terrier miniatura", "Bulldog", "Bulldog francés", "Bullmastiff", "Cairn Terrier", "Caniche enano", "Caniche grande",
+                    "Caniche toy", "Carlino", "Cavalier King Charles Spaniel", "Cazador de alces noruego elkhound noruego", "Chihuahua de pelo largo", "Chihuahua de pelo suave", "Chin japonés", "Chow Chow de pelo suave", "Clumber Spaniel", "Cobrador de Nueva Escocia",
+                    "Cockapoo", "Cocker spaniel", "Cocker Spaniel americano", "Collie barbudo", "Collie de pelo corto", "Corgi galés de Cardigan de pelo medio largo", "Corgi galés de Pembroke", "Cotón de Tulear", "Crestado chino", "Crestado rodesiano rhodesian ridgeback",
+                    "Dálmata", "Dandie Dinmont Terrier", "Dóberman", "Dogo Argentino", "Dogo de Burdeos", "Field Spaniel", "Fox Terrier de pelo duro", "Fox Terrier de pelo liso", "Foxhound", "Galgo",
+                    "Galgo italiano", "Golden retriever", "Gran azul de Gascuña", "Gran danés", "Grifón de Bruselas pelaje corto y áspero", "Grifón perro o Basset grifón vandeano grande", "Habanero", "Hamilton Stovare", "Hovawart", "Husky siberiano",
+                    "Keeshond", "Kerry blue Terrier", "King Charles Spaniel", "Komondor", "Kuvasz húngaro", "Labradoodle", "Labrador retriever", "Laekenois", "Lakeland Terrier", "Lancashire Heeler",
+                    "Lebrel escocés", "Leonberger", "Lhasa Apso", "Lobero irlandés", "Lowchen pequeño perro león", "Malamute de Alaska", "Maltés perro", "Manchester Terrier", "Mastín inglés o mastiff", "Mastín napolitano",
+                    "Mastín tibetano", "Munsterlander grande", "Otterhound", "Pachón Navarro", "Papillón", "Parson jack russell terrier de pelo corto suave", "Pastor australiano", "Pastor belga Groenendael", "Pastor belga Malinois", "Pastor belga Tervueren",
+                    "Pastor de Anatolia", "Pastor de Brie o Briard", "Pastor de Los Pirineos", "Pastor de Maremma", "Pastor de Shetland Shetland sheepdog", "Pastor ganadero australiano", "Pastor lapón de Suecia", "Pastor polaco de las llanuras", "Perdiguero portugués", "Perro Bull terrier",
+                    "Perro Cane Corso o mastín italiano", "Perro de agua español", "Perro de agua irlandés", "Perro de agua portugués", "Perro de Canaán", "Perro de Groenlandia", "Perro de montaña de los Pirineos", "Perro del faraón", "Perro finlandés de Laponia", "Perro Lobo Checoslovaco",
+                    "Perro mini Pinscher", "Perro pastor blanco suizo", "Perro pastor catalán o gos datura", "Perro Pastor del Cáucaso", "Perro Pastor Vasco", "Perro pointer inglés", "Perro Serra da Estrela", "Pinscher alemán", "Pitbull terrier americano", "Podenco Canario",
+                    "Podenco ibicenco de pelo corto y liso", "Pomerania", "Puli húngaro", "Ratonero Valenciano", "Raza pastor alemán", "Raza perro chow chow de pelo duro", "Retriever de Chesapeake", "Retriever de pelo liso", "Retriever de pelo rizado", "Rottweiler",
+                    "Rough Collie o Pastor Escocés", "Sabueso bávaro de montaña", "Sabueso italiano de pelo corto y suave", "Saluki galgo persa", "Samoyedo", "San Bernardo de pelo medio largo", "Schipperke", "Schnauzer estándar", "Schnauzer gigante", "Schnauzer miniatura",
+                    "Sealyham Terrier", "Setter escocés", "Setter inglés", "Setter irlandés", "Setter irlandés rojo y blanco", "Shar Pei", "Shiba Inu japonés", "Shih Tzu", "Silky Terrier australiano", "Skye Terrier",
+                    "Sloughi galgo árabe", "Soft Coated Wheaten Terrier", "Spaniel holandés", "Spaniel tibetano", "Spinone italiano", "Spitz alemán mediano", "Spitz alemán pequeño", "Spitz finlandés", "Spitz japonés", "Springer Spaniel galés",
+                    "Springer spaniel inglés", "Staffordshire bull terrier", "Sussex Spaniel", "Teckel pelo largo", "Teckel de pelo duro", "Teckel de pelo liso", "Teckel miniatura de pelo duro", "Teckel miniatura de pelo largo", "Teckel miniatura de pelo liso", "Terranova perro Newfoundland",
+                    "Terrier australiano", "Terrier Checo", "Terrier de Airedale", "Terrier de Norfolk Norfolk Terrier", "Terrier de Norwich Norwich terrier", "Terrier escocés scottish terrier", "Terrier galés", "Terrier irlandés", "Terrier tibetano", "Toy Terrier inglés negro y fuego",
+                    "Vallhund sueco", "West Highland White Terrier", "Whippet", "Xoloitzcuintle mediano", "Yorkshire Terrier"],
+
+                "gato": ["Persa", "Siamés", "Maine Coon"],
+
+                "ave": ["Loro", "Canario", "Perico"],
+
+                "reptil": ["Iguana", "Serpiente", "Tortuga"]
+
+            };
+
+            const campos = {
+                "perro": ["nombre", "raza", "sexo", "fechaNacimiento", "tamano", "tipoPelo", "colorPelo", "comidas", "medicinas"],
+                "gato": ["nombre", "raza", "sexo", "fechaNacimiento", "colorOjos", "tipoPelo", "comidas", "medicinas"],
+                "ave": ["nombre", "especie", "sexo", "fechaNacimiento", "envergadura", "colorPlumas", "comidas", "medicinas"],
+                "reptil": ["nombre", "especie", "sexo", "fechaNacimiento", "longitud", "temperaturaHabitat", "comidas", "medicinas"]
+            };
+
+            const tipo = document.getElementById('tipo');
+            const raza = document.getElementById('raza');
+            const especie = document.getElementById('especie');
+
+            tipo.addEventListener('change', () => {
+                const seleccion = tipo.value;
+
+                // Ocultar todos los campos primero
+                Object.values(campos).flat().forEach(id => {
+                    const campo = document.getElementById(id);
+                    if (campo)
+                        campo.classList.add('hidden');
+                });
+
+                // Mostrar los campos correspondientes al tipo seleccionado
+                if (campos[seleccion]) {
+                    campos[seleccion].forEach(id => {
+                        const campo = document.getElementById(id);
+                        if (campo)
+                            campo.classList.remove('hidden');
+                    });
+                }
+
+                // Manejo de raza/especie
+                if (seleccion === "perro" || seleccion === "gato") {
+                    raza.classList.remove('hidden');
+                    raza.innerHTML = '<option value="">-- Selecciona raza --</option>';
+                    razas[seleccion].forEach(r => {
+                        const option = document.createElement('option');
+                        option.value = r;
+                        option.textContent = r;
+                        raza.appendChild(option);
+                    });
+                    especie.classList.add('hidden');
+                    especie.innerHTML = '<option value="">-- Selecciona especie --</option>';
+                } else if (seleccion === "ave" || seleccion === "reptil") {
+                    especie.classList.remove('hidden');
+                    especie.innerHTML = '<option value="">-- Selecciona especie --</option>';
+                    razas[seleccion].forEach(r => {
+                        const option = document.createElement('option');
+                        option.value = r;
+                        option.textContent = r;
+                        especie.appendChild(option);
+                    });
+                    raza.classList.add('hidden');
+                    raza.innerHTML = '<option value="">-- Selecciona raza --</option>';
+                } else {
+                    // Ninguna opción seleccionada
+                    raza.classList.add('hidden');
+                    raza.innerHTML = '<option value="">-- Selecciona raza --</option>';
+                    especie.classList.add('hidden');
+                    especie.innerHTML = '<option value="">-- Selecciona especie --</option>';
+                }
+            });
+
+
+        </script>
+
+    </body>
 </html>

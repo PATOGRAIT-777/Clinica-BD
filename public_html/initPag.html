@@ -15,8 +15,8 @@
         <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
         <form class="login-form">
           <h2>Iniciar Sesión</h2>
-          <input type="text" placeholder="Usuario">
-          <input type="password" placeholder="Contraseña">
+          <input type="text" placeholder="Usuario" required>
+          <input type="password" placeholder="Contraseña" required>
           <button type="submit">Entrar</button>
         </form>
       </div>
@@ -31,15 +31,15 @@
           document.getElementById('login-modal').style.display = 'none';
         }
 
-        // Cierra si se hace clic fuera del cuadro de login
-        function closeOnOutsideClick(event) {
-          const modal = document.getElementById('login-modal');
-          const box = modal.querySelector('.login-box');
+function closeOnOutsideClick(event) {
+  const modal = document.getElementById('login-modal');
+  const box = modal.querySelector('.login-content');
 
-          if (!box.contains(event.target)) {
-            closeLogin();
-          }
-        }
+  if (box && !box.contains(event.target)) {
+    closeLogin();
+  }
+}
+
     </script>
     
 <body>
@@ -54,7 +54,7 @@
         <a href="regUser.html">Mi cuenta</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-ghost" >Registrarse</button>
+        <button class="btn-ghost" ><a href="formAgregar.html">Registrarse</a></button>
         <button class="btn-primary" onclick="openLogin()">Entrar</button>
       </div>
     </div>
