@@ -32,6 +32,9 @@
         <a href="regUser.html">Cuenta</a>
       </nav>
       <div class="header-actions">
+        <a href="cart.html" class="btn-ghost" style="position:relative;display:inline-flex;align-items:center;gap:8px">
+          🛒 <span id="cart-count" style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:999px;font-weight:700">0</span>
+        </a>
         <button class="btn-primary" onclick="openLogin()">Entrar</button>
       </div>
     </div>
@@ -83,7 +86,7 @@
       </div>
 
         <div class="productos">
-          <article class="producto" data-category="ofertas" style="position:relative">
+          <article class="producto" data-category="ofertas" style="position:relative" data-name="Croquetas Premium" data-price="850">
             <div style="position:relative">
             <img src="../img/extras/doge.jpg" alt="Croquetas" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
             <div class="discount-badge">-15%</div>
@@ -91,23 +94,23 @@
             <h3>Croquetas Premium</h3>
             <p class="muted">Adulto Raza Mediana</p>
             <h2 style="color: #22c55e; margin: 10px 0;">$850.00</h2>
-            <div style="display:flex;gap:8px"> <input type="number" min="1" value="1" style="width:80px"> <button class="btn-primary">Añadir</button> <button class="btn-ghost">Comprar ahora</button></div>
+            <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
           </article>
 
-          <article class="producto" data-category="farmacia">
+          <article class="producto" data-category="farmacia" data-name="Pipeta Antipulgas" data-price="250">
             <img src="../img/extras/doge.jpg" alt="Pipeta" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
             <h3>Pipeta Antipulgas</h3>
             <p class="muted">Protección 3 meses</p>
             <h2 style="color: #22c55e; margin: 10px 0;">$250.00</h2>
-            <div style="display:flex;gap:8px"> <input type="number" min="1" value="1" style="width:80px"> <button class="btn-primary">Añadir</button> <button class="btn-ghost">Comprar ahora</button></div>
+            <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
           </article>
 
-           <article class="producto" data-category="juguetes">
+           <article class="producto" data-category="juguetes" data-name="Juguete Mordedera" data-price="120">
           <img src="../img/extras/doge.jpg" alt="Juguete" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
           <h3>Juguete Mordedera</h3>
           <p class="muted">Alta resistencia</p>
           <h2 style="color: #22c55e; margin: 10px 0;">$120.00</h2>
-          <div style="display:flex;gap:8px"> <input type="number" min="1" value="1" style="width:80px"> <button class="btn-primary">Añadir</button> <button class="btn-ghost">Comprar ahora</button></div>
+          <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
         </article>
         </div>
 
@@ -161,6 +164,35 @@
 
     // Lógica del Login
     function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+
+    // Shopping cart (localStorage)
+    function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
+    function setCart(c){ localStorage.setItem('cart', JSON.stringify(c)); updateCartCount(); }
+    function updateCartCount(){ const c = getCart(); const qty = c.reduce((s,i)=>s+i.qty,0); document.getElementById('cart-count').textContent = qty; }
+
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.classList.contains('add-to-cart')){
+        const art = e.target.closest('.producto');
+        const name = art.dataset.name || art.querySelector('h3')?.textContent || 'Producto';
+        const price = parseFloat(art.dataset.price||0);
+        const qtyEl = art.querySelector('.qty');
+        const qty = Math.max(1, parseInt(qtyEl?.value||1,10));
+        const cart = getCart();
+        const existing = cart.find(i=>i.name===name && i.price===price);
+        if(existing) existing.qty += qty; else cart.push({name,price,qty});
+        setCart(cart);
+        alert(qty + ' × ' + name + ' añadidos al carrito');
+      }
+      if(e.target && e.target.classList.contains('buy-now')){
+        const art = e.target.closest('.producto'); const name = art.dataset.name || art.querySelector('h3')?.textContent || 'Producto';
+        const price = parseFloat(art.dataset.price||0); const qty = Math.max(1, parseInt(art.querySelector('.qty')?.value||1,10));
+        localStorage.setItem('checkout_now', JSON.stringify([{name,price,qty}]));
+        location.href = 'cart.html';
+      }
+    });
+
+    // initialize cart count
+    updateCartCount();
 
     // Carrusel Simple
     let index = 0;

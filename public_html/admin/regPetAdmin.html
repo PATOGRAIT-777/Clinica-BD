@@ -88,86 +88,54 @@
                                 <form id="regPetForm" method="post" action="desplegar.jsp" class="form-size" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;width:100%;">
 
                                         <!-- Owner selector (visible para admin) -->
-                                        <div style="width:100%;">
-                                            <label for="ownerSearch">Propietario (buscar o seleccionar) — solo admin:</label>
-                                            <input list="ownersList" id="ownerSearch" name="ownerSearch" placeholder="Buscar propietario...">
-                                            <datalist id="ownersList"></datalist>
-                                            <label style="display:block;margin-top:8px"><input type="checkbox" id="noOwner"> Registrar mascota sin dueño</label>
+                                        <!-- Mover la búsqueda / opción sin dueño dentro del formulario, alineada a la izquierda -->
+                                        <div style="width:40%;min-width:220px;">
+                                            <div class="reg-card" style="padding:12px;">
+                                                <h3>Propietario (Admin)</h3>
+                                                <label for="ownerSearch">Buscar propietario:</label>
+                                                <input list="ownersList" id="ownerSearch" name="ownerSearch" placeholder="Buscar propietario..." style="width:100%">
+                                                <datalist id="ownersList"></datalist>
+                                                <label style="display:block;margin-top:8px"><input type="checkbox" id="noOwner"> Registrar mascota sin dueño</label>
+                                            </div>
                                         </div>
 
-                    <!-- Primera tarjeta -->
-                    <div class="reg-card">
-                                                <h2>Datos generales</h2>
+                    <!-- Primera tarjeta (datos principales) -->
+                    <div class="reg-card" style="flex:1;min-width:380px">
+                        <h2>Datos generales</h2>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                          <select id="tipo" name="tipo" required>
+                              <option value="">-- Selecciona tipo --</option>
+                              <option value="perro">🐶 Perro</option>
+                              <option value="gato">🐱 Gato</option>
+                              <option value="ave">🦜 Ave</option>
+                              <option value="reptil">🦎 Reptil</option>
+                          </select>
 
-                                                <select id="tipo" name="tipo" required>
-                                                        <option value="">-- Selecciona tipo --</option>
-                                                        <option value="perro">🐶 Perro</option>
-                                                        <option value="gato">🐱 Gato</option>
-                                                        <option value="ave">🦜 Ave</option>
-                                                        <option value="reptil">🦎 Reptil</option>
-                                                </select>
-
-                                                <!-- Campos solicitados para BD -->
-                                                <input type="text" id="ruac" name="ruac" placeholder="Clave RUAC" required>
-                                                <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
-                                                <input type="text" id="especie" name="especie" placeholder="Especie (Perro/Gato/...)" required>
-                                                <input type="number" id="edad" name="edad" placeholder="Edad" required>
-                                                <select id="genero" name="genero">
-                                                    <option value="">-- Género --</option>
-                                                    <option value="hembra">Hembra</option>
-                                                    <option value="macho">Macho</option>
-                                                </select>
-                                                <label><input type="checkbox" id="esterilizado" name="esterilizado"> Esterilizado</label>
-                                                <label><input type="checkbox" id="microchip" name="microchip"> Tiene microchip</label>
-                                                <input type="text" id="numeroChip" name="numeroChip" placeholder="Número de chip (si aplica)">
-                                                <select id="tamano" name="tamano">
-                                                    <option value="">-- Tamaño --</option>
-                                                    <option value="chico">Chico</option>
-                                                    <option value="mediano">Mediano</option>
-                                                    <option value="grande">Grande</option>
-                                                    <option value="muy_grande">Muy grande</option>
-                                                </select>
-                                                <input type="text" id="colorPrimario" name="colorPrimario" placeholder="Color primario">
-                                                <input type="text" id="colorSecundario" name="colorSecundario" placeholder="Color secundario">
-                                                <input type="text" id="cobertura" name="cobertura" placeholder="Cobertura corporal (pelaje/plumas/escamas)">
-                                                <input type="number" step="0.1" id="peso" name="peso" placeholder="Peso (kg)">
-                                                <label>Foto principal (URL o subir):</label>
-                                                <input type="text" id="fotoUrl" name="fotoUrl" placeholder="URL de imagen">
-                                                <input type="file" id="fotoFile" name="fotoFile" accept="image/*">
-                                                <select id="procedencia" name="procedencia">
-                                                    <option value="">-- Procedencia --</option>
-                                                    <option value="Adopcion">Adopción</option>
-                                                    <option value="Rescatada">Rescatada</option>
-                                                    <option value="Donada">Donada</option>
-                                                    <option value="Heredada">Heredada</option>
-                                                    <option value="Adquirida">Adquirida</option>
-                                                    <option value="Comprada">Comprada</option>
-                                                </select>
-                                                <label><input type="checkbox" id="supervisionExterior" name="supervisionExterior"> Supervisión en exterior</label>
-                                                <select id="comportamiento" name="comportamiento">
-                                                    <option value="">-- Comportamiento --</option>
-                                                    <option value="Amigable">Amigable</option>
-                                                    <option value="Agresivo">Agresivo</option>
-                                                    <option value="Neutral">Neutral</option>
-                                                </select>
-                                                <label><input type="checkbox" id="cartillaVacunacion" name="cartillaVacunacion"> Tiene cartilla de vacunación</label>
-                                                <label>Última vacuna de la rabia:</label>
-                                                <input type="date" id="ultimaRabia" name="ultimaRabia">
-                                                <label><input type="checkbox" id="discapacitada" name="discapacitada"> Discapacitada</label>
-                                                <input type="text" id="tipoDiscapacidad" name="tipoDiscapacidad" placeholder="Tipo de discapacidad">
-                                                <label><input type="checkbox" id="desparacitada" name="desparacitada"> Desparasitada</label>
-                                                <input type="date" id="ultimaDesparasitacion" name="ultimaDesparasitacion">
-                                                <select id="ubicacionHogar" name="ubicacionHogar">
-                                                    <option value="">-- Ubicación en el hogar --</option>
-                                                    <option value="Interior">Interior</option>
-                                                    <option value="Exterior">Exterior</option>
-                                                </select>
-                                                <select id="formaIdentificacion" name="formaIdentificacion">
-                                                    <option value="">-- Forma de identificación --</option>
-                                                    <option value="Collar">Collar</option>
-                                                    <option value="Placa">Placa de identificación</option>
-                                                    <option value="Microchip">Microchip</option>
-                                                </select>
+                          <input type="text" id="ruac" name="ruac" placeholder="Clave RUAC">
+                          <input type="text" id="nombre" name="nombre" placeholder="Nombre" >
+                          <input type="text" id="especie" name="especie" placeholder="Especie (ej. Perro)" >
+                          <input type="number" id="edad" name="edad" placeholder="Edad" >
+                          <select id="genero" name="genero"><option value="">Género</option><option value="hembra">Hembra</option><option value="macho">Macho</option></select>
+                          <label><input type="checkbox" id="esterilizado" name="esterilizado"> Esterilizado</label>
+                          <label><input type="checkbox" id="microchip" name="microchip"> Tiene microchip</label>
+                          <input type="text" id="numeroChip" name="numeroChip" placeholder="Número de chip">
+                          <select id="tamano" name="tamano"><option value="">Tamaño</option><option value="chico">Chico</option><option value="mediano">Mediano</option><option value="grande">Grande</option><option value="muy_grande">Muy grande</option></select>
+                          <input type="text" id="colorPrimario" name="colorPrimario" placeholder="Color primario">
+                          <input type="text" id="colorSecundario" name="colorSecundario" placeholder="Color secundario">
+                          <input type="text" id="cobertura" name="cobertura" placeholder="Cobertura corporal">
+                          <input type="number" step="0.1" id="peso" name="peso" placeholder="Peso (kg)">
+                          <input type="text" id="procedencia" name="procedencia" placeholder="Procedencia (Adopción/Compra)">
+                          <label><input type="checkbox" id="supervisionExterior" name="supervisionExterior"> Supervisión en exterior</label>
+                          <select id="comportamiento" name="comportamiento"><option value="">Comportamiento</option><option>Amigable</option><option>Agresivo</option><option>Neutral</option></select>
+                          <label><input type="checkbox" id="cartillaVacunacion" name="cartillaVacunacion"> Tiene cartilla de vacunación</label>
+                          <input type="date" id="ultimaRabia" name="ultimaRabia">
+                          <label><input type="checkbox" id="discapacitada" name="discapacitada"> Discapacitada</label>
+                          <input type="text" id="tipoDiscapacidad" name="tipoDiscapacidad" placeholder="Tipo de discapacidad">
+                          <label><input type="checkbox" id="desparacitada" name="desparacitada"> Desparasitada</label>
+                          <input type="date" id="ultimaDesparasitacion" name="ultimaDesparasitacion">
+                          <select id="ubicacionHogar" name="ubicacionHogar"><option value="">Ubicación en el hogar</option><option>Interior</option><option>Exterior</option></select>
+                          <select id="formaIdentificacion" name="formaIdentificacion"><option value="">Forma de identificación</option><option>Collar</option><option>Placa</option><option>Microchip</option></select>
+                        </div>
 
 
 
@@ -176,15 +144,13 @@
                     <!-- Segunda tarjeta -->
                     <div class="reg-card">
                         <h2>Historial médico</h2>
-                                                <label>Cuadro de vacunación (archivo o texto):</label>
-                                                <input type="file" name="vacunasFile">
-                                                <input type="text" name="vacunasText" placeholder="Vacunas y fechas">
+                                                <label>Cuadro de vacunación:</label>
+                                                <input type="file" name="vacunas" required>
                                                 <label>Fecha de última desparasitación:</label>
                                                 <input type="date" name="desparasitacion">
-                                                <label>RUAC (si tiene):</label>
                                                 <input type="text" name="ruac" id="ruacField" placeholder="RUAC (si tiene)">
                                                 <label>Imagen de tu mascota:</label>
-                                                <input type="file" name="foto_mascota">
+                                                <input type="file" name="foto_mascota" required>
 
                                                 <div style="margin-top:12px">
                                                     <button type="submit" class="reg-btn-submit">Registrar Mascota</button>

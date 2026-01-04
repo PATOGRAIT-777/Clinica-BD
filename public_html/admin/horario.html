@@ -69,6 +69,12 @@
     <section class="main" style="width:100%">
       <article class="card">
         <h2>Calendario — próximas 2 semanas</h2>
+        <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
+          <label style="display:flex;flex-direction:column"><span class="muted">Sucursal</span><select id="branch-select"></select></label>
+          <label style="display:flex;flex-direction:column"><span class="muted">Doctor</span><select id="doctor-select"></select></label>
+          <label style="display:flex;flex-direction:column"><span class="muted">Fecha inicio</span><input type="date" id="date-focus"></label>
+          <label style="display:flex;flex-direction:column"><span class="muted">Fecha fin</span><input type="date" id="date-end"></label>
+        </div>
         <div id="calendar-2weeks" style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:12px"></div>
       </article>
     </section>
@@ -83,31 +89,76 @@
 
   <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
   <script>
-    // Render next 14 days with sample time slots (09:00-17:00 every 1h) and mark free/busy
+    // Enhanced 2-week schedule with branches and doctors; appointments stored in localStorage
     (function(){
       const container = document.getElementById('calendar-2weeks');
-      const today = new Date();
-      const busy = {
-        // sample busy slots (ISO date => ['09:00','13:00'])
-      };
-      for(let d=0; d<14; d++){
-        const date = new Date(today.getFullYear(), today.getMonth(), today.getDate()+d);
-        const dd = date.toISOString().slice(0,10);
-        const card = document.createElement('div'); card.className='card';
-        const title = document.createElement('h3'); title.textContent = date.toLocaleDateString(); card.appendChild(title);
-        const list = document.createElement('div');
-        for(let h=9; h<=17; h++){
-          const time = (h<10? '0'+h : h)+':00';
-          const slot = document.createElement('div');
-          slot.style.padding='6px'; slot.style.borderBottom='1px solid rgba(0,0,0,0.06)';
-          const isBusy = (busy[dd]||[]).includes(time);
-          slot.innerHTML = `<strong>${time}</strong> — <span style="color:${isBusy?'#ef4444':'#16a34a'}">${isBusy?'ocupado':'libre'}</span>`;
-          list.appendChild(slot);
-        }
-        card.appendChild(list); container.appendChild(card);
+      const branchSelect = document.getElementById('branch-select');
+      const doctorSelect = document.getElementById('doctor-select');
+      const dateFocus = document.getElementById('date-focus');
+      let branches = [];
+
+      function loadBranches(){
+        fetch('branches.json').then(r=>r.json()).then(j=>{
+          branches = j.branches || [];
+          branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+          branchSelect.dispatchEvent(new Event('change'));
+        }).catch(err=>{
+          console.error('No pude cargar branches.json', err);
+        });
       }
-      // make container wrap into two rows on smaller screens
-      container.style.gridAutoRows = 'minmax(120px,auto)';
+
+      function populateDoctors(){
+        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
+        doctorSelect.innerHTML = (b.doctors||[]).map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
+        renderCalendar();
+      }
+
+      function renderCalendar(){
+        container.innerHTML = '';
+        const start = document.getElementById('date-focus').value ? new Date(document.getElementById('date-focus').value) : new Date();
+        const endInput = document.getElementById('date-end').value;
+        const end = endInput ? new Date(endInput) : new Date(start.getFullYear(), start.getMonth(), start.getDate()+13);
+        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
+        // ensure start <= end
+        if(end < start){ container.innerHTML = '<p class="muted">Rango inválido: la fecha fin es anterior a la fecha inicio.</p>'; return; }
+        for(let d = 0, cur = new Date(start.getFullYear(), start.getMonth(), start.getDate()); cur <= end; d++, cur = new Date(start.getFullYear(), start.getMonth(), start.getDate()+d)){
+          const date = new Date(cur);
+          const iso = date.toISOString().slice(0,10);
+          const card = document.createElement('div'); card.className='card';
+          const title = document.createElement('h3'); title.textContent = date.toLocaleDateString(); title.style.color = 'var(--accent,#16a34a)'; card.appendChild(title);
+          const list = document.createElement('div');
+          // show hourly slots from 08:00 to 18:00
+          for(let h=8; h<=18; h++){
+            const hh = (h<10? '0'+h : ''+h)+':00';
+            const slot = document.createElement('div'); slot.style.marginBottom='6px';
+            const btn = document.createElement('button');
+            btn.textContent = hh;
+            const exists = appointments.find(a=>a.date===iso && a.time===hh && a.branch===branchSelect.value && a.doctor===doctorSelect.value);
+            if(exists){ btn.disabled = true; btn.textContent = hh + ' — Ocupado'; btn.className='btn-ghost'; }
+            else { btn.className='btn-available'; btn.style.background='#16a34a'; btn.style.color='#fff'; }
+            btn.addEventListener('click', ()=>bookSlot(iso, hh));
+            slot.appendChild(btn); list.appendChild(slot);
+          }
+          card.appendChild(list); container.appendChild(card);
+        }
+        container.style.gridAutoRows = 'minmax(120px,auto)';
+      }
+
+      function bookSlot(date, time){
+        const name = prompt('Nombre del dueño para la cita (ej. María Pérez):');
+        if(!name) return;
+        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
+        appointments.push({id:Date.now(), owner:name, branch:branchSelect.value, doctor:doctorSelect.value, date, time});
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        alert('Cita registrada: '+date+' '+time);
+        renderCalendar();
+      }
+
+      branchSelect.addEventListener('change', populateDoctors);
+      doctorSelect.addEventListener('change', renderCalendar);
+      dateFocus.addEventListener('change', ()=>{ /* optional: focus day */ });
+
+      loadBranches();
     })();
   </script>
 </body>

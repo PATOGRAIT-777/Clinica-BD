@@ -49,17 +49,29 @@
       <div style="display:flex;gap:12px;margin-top:12px;align-items:flex-start">
         <div style="flex:1">
           <div class="calendar">
-            <h3>Calendario (placeholder)</h3>
-            <p>Implementar calendario interactivo (FullCalendar o similar) aquí.</p>
+            <h3>Reservar cita</h3>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <label style="display:flex;flex-direction:column"><span class="muted">Sucursal</span><select id="branch-select"></select></label>
+              <label style="display:flex;flex-direction:column"><span class="muted">Doctor</span><select id="doctor-select"></select></label>
+              <label style="display:flex;flex-direction:column"><span class="muted">Día</span><select id="day-select"></select></label>
+            </div>
+            <div id="slots-list" style="display:flex;flex-direction:column;gap:6px"></div>
+            <!-- booking panel -->
+            <div id="booking-panel" style="display:none;border-top:1px solid rgba(0,0,0,0.06);padding-top:8px;margin-top:8px">
+              <h4>Reservar cita</h4>
+              <label style="display:flex;flex-direction:column"><span class="muted">Buscar dueño</span><input id="booking-owner" list="owners-list" placeholder="Escribe para buscar..."><datalist id="owners-list"></datalist></label>
+              <label style="display:flex;flex-direction:column"><span class="muted">Procedimiento</span><input id="booking-procedure" placeholder="Descripción del servicio"></label>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="booking-confirm" class="btn-primary">Agendar</button>
+                <button id="booking-cancel" class="btn-ghost">Cancelar</button>
+              </div>
+            </div>
           </div>
         </div>
         <div style="width:320px">
           <div class="card" style="padding:12px;border-radius:8px;background:transparent;color:inherit">
             <h3>Próximas citas</h3>
-            <ul>
-              <li>09:30 — Firulais — Confirmada</li>
-              <li>10:00 — Misu — Pendiente</li>
-            </ul>
+            <div id="upcoming-appointments"><p class="muted">Cargando...</p></div>
           </div>
         </div>
       </div>
@@ -86,11 +98,99 @@
     </div>
   </div>
 
-  <script>
+    <script>
     function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
     function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
     function closeOnOutsideClick(event) { const modal = document.getElementById('login-modal'); if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin(); }
     document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
+
+    // Load branches and show available slots; appointments in localStorage
+    (function(){
+      const branchSelect = document.getElementById('branch-select');
+      const doctorSelect = document.getElementById('doctor-select');
+      const daySelect = document.getElementById('day-select');
+      const slotsList = document.getElementById('slots-list');
+      const upcoming = document.getElementById('upcoming-appointments');
+      let branches = [];
+
+      function loadBranches(){
+        fetch('branches.json').then(r=>r.json()).then(j=>{
+          branches = j.branches || [];
+          branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+          branchSelect.dispatchEvent(new Event('change'));
+          renderUpcoming();
+        }).catch(err=>{ console.error(err); upcoming.innerHTML='<p class="muted">No se pudieron cargar sucursales.</p>'; });
+      }
+
+      function populateDoctors(){
+        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
+        doctorSelect.innerHTML = (b.doctors||[]).map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
+        populateDays();
+      }
+
+      function populateDays(){
+        daySelect.innerHTML='';
+        const today = new Date();
+        for(let i=0;i<7;i++){ const d=new Date(today.getFullYear(), today.getMonth(), today.getDate()+i); daySelect.innerHTML += `<option value="${d.toISOString().slice(0,10)}">${d.toLocaleDateString()}</option>` }
+        daySelect.dispatchEvent(new Event('change'));
+      }
+
+      function loadOwnersSuggestions(){
+        fetch('owners.json').then(r=>r.json()).then(list=>{ const dl = document.getElementById('owners-list'); dl.innerHTML=''; (list||[]).forEach(o=>{ const opt = document.createElement('option'); opt.value = o.name; dl.appendChild(opt); }); }).catch(()=>{/* ignore */});
+      }
+
+      function renderSlots(){
+        slotsList.innerHTML='';
+        const date = daySelect.value;
+        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
+        // basic slots 09:00-17:00
+        for(let h=9; h<=17; h++){
+          const time = (h<10? '0'+h : ''+h) + ':00';
+          const taken = appointments.find(a=>a.date===date && a.time===time && a.branch===branchSelect.value && a.doctor===doctorSelect.value);
+          const btn = document.createElement('button'); btn.className = taken? 'btn-ghost' : 'btn-primary'; btn.textContent = time + (taken? ' — Ocupado':' — Reservar');
+          btn.disabled = !!taken;
+          btn.addEventListener('click', ()=>openBookingPanel(date, time));
+          slotsList.appendChild(btn);
+        }
+      }
+
+      function openBookingPanel(date, time){
+        loadOwnersSuggestions();
+        const panel = document.getElementById('booking-panel'); panel.dataset.date = date; panel.dataset.time = time; panel.style.display = 'block';
+        // focus owner input
+        document.getElementById('booking-owner').focus();
+      }
+
+      document.getElementById('booking-cancel').addEventListener('click', ()=>{ document.getElementById('booking-panel').style.display='none'; });
+      document.getElementById('booking-confirm').addEventListener('click', ()=>{
+        const owner = document.getElementById('booking-owner').value.trim();
+        const procedure = document.getElementById('booking-procedure').value.trim();
+        if(!owner){ alert('Ingresa o selecciona el dueño.'); return; }
+        const panel = document.getElementById('booking-panel'); const date = panel.dataset.date; const time = panel.dataset.time;
+        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
+        appointments.push({id:Date.now(), owner, branch:branchSelect.value, doctor:doctorSelect.value, date, time, procedure});
+        localStorage.setItem('appointments', JSON.stringify(appointments));
+        panel.style.display='none'; renderSlots(); renderUpcoming(); alert('Cita agendada');
+      });
+
+      function renderUpcoming(){
+        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
+        if(!appointments.length){ upcoming.innerHTML='<p class="muted">No hay citas próximas.</p>'; return; }
+        const list = document.createElement('ul');
+        appointments.slice(-10).reverse().forEach(a=>{
+          const b = branches.find(x=>x.id===a.branch); const doc = (b && b.doctors)? b.doctors.find(d=>d.id===a.doctor) : null;
+          const li = document.createElement('li'); li.textContent = `${a.date} ${a.time} — ${a.owner} — ${b?b.name:'-'} / ${doc?doc.name:'-'}`;
+          list.appendChild(li);
+        });
+        upcoming.innerHTML=''; upcoming.appendChild(list);
+      }
+
+      branchSelect.addEventListener('change', populateDoctors);
+      doctorSelect.addEventListener('change', renderSlots);
+      daySelect.addEventListener('change', renderSlots);
+
+      loadBranches();
+    })();
+    </script>
 </body>
 </html>

@@ -79,6 +79,46 @@
             <textarea name="bio" rows="4">Gusta ver anime y coleccionar listas.</textarea>
           </label>
 
+          <!-- Datos adicionales agregados para permitir edición de campos usados en registro -->
+          <label>
+            Fecha de nacimiento
+            <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" />
+          </label>
+
+          <label>
+            Género
+            <select name="genero" id="genero">
+              <option value="">-- Selecciona --</option>
+              <option value="mujer">Mujer</option>
+              <option value="hombre">Hombre</option>
+              <option value="otro">Otro</option>
+              <option value="prefiere_no_decir">Prefiere no decir</option>
+            </select>
+          </label>
+
+          <label>
+            Estado civil
+            <select name="estado_civil" id="estado_civil">
+              <option value="">-- Selecciona --</option>
+              <option>Soltero/a</option>
+              <option>Casado/a</option>
+              <option>Unión libre</option>
+              <option>Viudo/a</option>
+            </select>
+          </label>
+
+          <label>
+            Ocupación
+            <input type="text" name="ocupacion" id="ocupacion" placeholder="Ocupación" />
+          </label>
+
+          <label>
+            Empresa
+            <input type="text" name="empresa" id="empresa" placeholder="Empresa (opcional)" />
+          </label>
+
+          <label class="full"><input type="checkbox" name="accept_terms" id="accept_terms"> Acepto los términos y condiciones (registro)</label>
+
           <div class="form-actions full">
             <button type="submit" class="btn-primary">Guardar cambios</button>
             <button type="button" class="btn-ghost">Cancelar</button>

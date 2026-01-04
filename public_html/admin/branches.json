@@ -1,0 +1,40 @@
+{
+  "branches": [
+    {
+      "id": "lindavista",
+      "name": "Lindavista",
+      "address": "Av. Lindavista 123",
+      "doctors": [
+        {"id":"d-lin-1","name":"Dr. Alejandro Ruiz","specialty":"Medicina General","workHours":"09:00-17:00"},
+        {"id":"d-lin-2","name":"Dra. Mariela Gómez","specialty":"Dermatología","workHours":"10:00-18:00"},
+        {"id":"d-lin-3","name":"Dr. Carlos Pérez","specialty":"Cirugía","workHours":"09:00-15:00"},
+        {"id":"d-lin-4","name":"Dra. Laura Sánchez","specialty":"Cardiología","workHours":"11:00-19:00"},
+        {"id":"d-lin-5","name":"Dr. Pablo Ortega","specialty":"Oftalmología","workHours":"08:00-14:00"}
+      ]
+    },
+    {
+      "id": "centro",
+      "name": "Centro",
+      "address": "Calle Central 45",
+      "doctors": [
+        {"id":"d-cen-1","name":"Dra. Ana Torres","specialty":"Medicina General","workHours":"09:00-17:00"},
+        {"id":"d-cen-2","name":"Dr. René López","specialty":"Odontología","workHours":"10:00-16:00"},
+        {"id":"d-cen-3","name":"Dra. Silvia Ramos","specialty":"Neurología","workHours":"12:00-20:00"},
+        {"id":"d-cen-4","name":"Dr. Hugo Méndez","specialty":"Traumatología","workHours":"08:00-14:00"},
+        {"id":"d-cen-5","name":"Dra. Elsa Moreno","specialty":"Dermatología","workHours":"09:00-15:00"}
+      ]
+    },
+    {
+      "id": "valle",
+      "name": "Valle Verde",
+      "address": "Blvd. Valle 78",
+      "doctors": [
+        {"id":"d-val-1","name":"Dr. Mateo Cruz","specialty":"Medicina General","workHours":"09:00-17:00"},
+        {"id":"d-val-2","name":"Dra. Fernanda Ibarra","specialty":"Pediatría","workHours":"10:00-18:00"},
+        {"id":"d-val-3","name":"Dr. Ernesto Díaz","specialty":"Cirugía","workHours":"09:00-16:00"},
+        {"id":"d-val-4","name":"Dra. Miriam Vargas","specialty":"Oftalmología","workHours":"11:00-19:00"},
+        {"id":"d-val-5","name":"Dr. Jorge León","specialty":"Cardiología","workHours":"08:00-14:00"}
+      ]
+    }
+  ]
+}

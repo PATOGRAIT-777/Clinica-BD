@@ -106,7 +106,39 @@
 
     function openPatientModal(nombre, dueño, edad) {
       const modal = document.getElementById('patient-modal');
-      document.getElementById('patient-info').innerHTML = `<p><strong>Nombre:</strong> ${nombre}</p><p><strong>Dueño:</strong> ${dueño}</p><p><strong>Edad:</strong> ${edad}</p><p><strong>Padecimientos:</strong> N/D</p>`;
+      const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
+      // try to find pet record by name and owner
+      const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
+      const pet = pets.find(p=> (p.name===nombre && (p.owner===dueño || p.ownerName===dueño)) ) || pets.find(p=>p.name===nombre) || null;
+      const visits = appointments.filter(a=> a.owner===dueño || a.pet===nombre || a.petId=== (pet && pet.id) ).length;
+      const history = appointments.filter(a=> a.owner===dueño || a.pet===nombre || a.petId=== (pet && pet.id)).sort((a,b)=> (a.date||a.day||'').localeCompare(b.date||b.day||''));
+      let sucursal='N/D', doctor='N/D', padecimientos='N/D';
+      const last = history.slice(-1)[0] || null;
+      if(last){ sucursal = last.branch || last.branchName || 'N/D'; doctor = last.doctor || 'N/D'; padecimientos = last.procedure || last.padecimiento || 'N/D'; }
+
+      // build detailed patient info including full pet registration when available
+      let infoHtml = `
+        <p><strong>Nombre:</strong> ${nombre}</p>
+        <p><strong>Dueño:</strong> ${dueño}</p>
+        <p><strong>Edad:</strong> ${edad}</p>
+        <p><strong>Sucursal registrada:</strong> ${sucursal}</p>
+        <p><strong>Doctor última cita:</strong> ${doctor}</p>
+        <p><strong>Padecimientos / Procedimiento:</strong> ${padecimientos}</p>
+        <p><strong>Veces asistió a cita:</strong> ${visits}</p>
+      `;
+      if(pet){
+        infoHtml += '<hr><h3>Ficha completa de la mascota</h3>';
+        const keys = ['ruac','name','species','age','gender','sterilized','microchipped','microchipNumber','size','primaryColor','secondaryColor','coverage','weight','provenance','outdoorSupervision','behavior','vaccinationCard','lastRabies','disabled','disabilityType','dewormed','lastDeworm','homeLocation','idMethod'];
+        keys.forEach(k=>{ if(pet[k]!==undefined){ infoHtml += `<p><strong>${k}:</strong> ${pet[k]}</p>`; }});
+      }
+
+      if(history.length>0){
+        infoHtml += '<hr><h3>Historial de citas</h3><ul>';
+        history.forEach(h=>{ infoHtml += `<li>${h.date||h.day||'N/D'} ${h.time||h.hour||''} — ${h.branch||h.branchName||'N/D'} / ${h.doctor||'N/D'} — ${h.procedure||h.padecimiento||h.reason||'N/D'}</li>`; });
+        infoHtml += '</ul>';
+      }
+
+      document.getElementById('patient-info').innerHTML = infoHtml;
       modal.style.display = 'flex';
     }
 
