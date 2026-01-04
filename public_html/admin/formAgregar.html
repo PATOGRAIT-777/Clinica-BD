@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registrarse — TechSide</title>
+  <link rel="stylesheet" href="../css/universalCss.css" type="text/css">
+  <link rel="stylesheet" href="../css/divs.css" type="text/css">
+  <link rel="stylesheet" href="../css/initSes.css" type="text/css">
+</head>
+
+<style>
+  /* Ensure form fields align and fill container */
+  .form-size label, .form-size input, .form-size select, .form-size textarea { width:100%; box-sizing:border-box }
+  .form-size { display:grid; grid-template-columns: 1fr 1fr; gap:12px }
+  .form-size .full { grid-column:1 / -1 }
+  @media (max-width:880px){ .form-size{grid-template-columns:1fr} }
+</style>
+
+    <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+      <div class="login-content">
+        <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+        <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
+        <form class="login-form">
+          <h2>Iniciar Sesión</h2>
+          <input type="text" placeholder="Usuario">
+          <input type="password" placeholder="Contraseña">
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
+    </div>
+
+    <script> 
+        function openLogin() {
+          document.getElementById('login-modal').style.display = 'flex';
+        }
+
+        function closeLogin() {
+          document.getElementById('login-modal').style.display = 'none';
+        }
+
+        // Cierra si se hace clic fuera del cuadro de login
+        function closeOnOutsideClick(event) {
+          const modal = document.getElementById('login-modal');
+          const box = modal.querySelector('.login-box');
+
+          if (!box.contains(event.target)) {
+            closeLogin();
+          }
+        }
+        
+        function regValNum(event) {
+        const numeros = "1234567890";
+        const tecla = String.fromCharCode(event.which || event.keyCode);
+        if (numeros.indexOf(tecla) === -1) { alert("Por favor, ingresa solo números"); return false; }
+        return true;
+        }
+
+        function regValText(event) {
+        const letras = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ ";
+        const tecla = String.fromCharCode(event.which || event.keyCode);
+        if (letras.indexOf(tecla) === -1) { alert("Por favor, ingresa solo texto"); return false; }
+        return true;
+        }
+    </script>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/">Clinica</a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="initPag.html">Inicio</a>
+
+    </div>
+  </header>
+
+        <section id="reg-section">
+              <div class="reg-container">
+
+                <!-- Registro -->
+                <div class="reg-card">
+                  <h2>Regístrate</h2>
+                  <form method="post" action="desplegar.jsp" class="form-size" enctype="multipart/form-data">
+                    <input type="hidden" name="role" value="cliente">
+
+                    <label>
+                      Usuario
+                      <input type="text" name="usr" placeholder="Usuario (alias)" onkeypress="return regValText(event)" required>
+                    </label>
+
+                    <label>
+                      Nombre(s)
+                      <input type="text" name="nombre" placeholder="Nombre(s)" onkeypress="return regValText(event)" required>
+                    </label>
+
+                    <label>
+                      Apellidos
+                      <input type="text" name="apellidos" placeholder="Apellidos" onkeypress="return regValText(event)" required>
+                    </label>
+
+                    <label>
+                      CURP
+                      <input type="text" name="curp" placeholder="CURP (Ej. GARC850101HDFABC01)" required>
+                    </label>
+
+                    <label>
+                      RFC (opcional)
+                      <input type="text" name="rfc" placeholder="RFC" >
+                    </label>
+
+                    <label>
+                      Correo electrónico
+                      <input type="email" name="email" placeholder="correo@servidor.com" required>
+                    </label>
+
+                    <label>
+                      Teléfono principal
+                      <input type="tel" name="telefono" placeholder="55 1234 5678" onkeypress="return regValNum(event)" required>
+                    </label>
+
+                    <label>
+                      Teléfono secundario
+                      <input type="tel" name="telefono2" placeholder="(opcional)" onkeypress="return regValNum(event)">
+                    </label>
+
+                    <fieldset>
+                      <legend>Dirección</legend>
+                      <label>
+                        Calle y número exterior
+                        <input type="text" name="calle_num" placeholder="Calle y No. exterior" required>
+                      </label>
+                      <label>
+                        Número interior
+                        <input type="text" name="num_int" placeholder="No. interior (opcional)">
+                      </label>
+                      <label>
+                        Estado
+                        <select id="mx_state" name="estado" required>
+                          <option value="">-- Selecciona estado --</option>
+                        </select>
+                      </label>
+                      <label>
+                        Alcaldía / Municipio
+                        <select id="mx_municipio" name="municipio" required>
+                          <option value="">-- Selecciona municipio --</option>
+                        </select>
+                      </label>
+                      <label>
+                        Colonia
+                        <select id="mx_colonia" name="colonia" required>
+                          <option value="">-- Selecciona colonia --</option>
+                        </select>
+                      </label>
+                      <label>
+                        Código Postal
+                        <input type="text" name="cp" placeholder="Código Postal" onkeypress="return regValNum(event)" required>
+                      </label>
+                    </fieldset>
+
+                    <label>
+                      Tipo de identificación
+                      <select name="id_type" required>
+                        <option value="INE">INE/IFE</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      Número de identificación
+                      <input type="text" name="id_number" placeholder="Número de ID" required>
+                    </label>
+
+                    <label>
+                      Comprobante de domicilio (archivo)
+                      <input type="file" name="proof_address" accept="image/*,application/pdf" required>
+                    </label>
+
+                    <label>
+                      Identificación oficial (archivo)
+                      <input type="file" name="proof_id" accept="image/*,application/pdf" required>
+                    </label>
+
+                    <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                      <div>
+                        <label>Persona de contacto 1</label>
+                        <input type="text" name="contact_name_1" placeholder="Nombre" onkeypress="return regValText(event)">
+                        <select name="contact_rel_1">
+                          <option value="">Parentesco</option>
+                          <option>Familiar</option>
+                          <option>Vecino</option>
+                          <option>Amigo</option>
+                        </select>
+                        <input type="tel" name="contact_phone_1" placeholder="Teléfono" onkeypress="return regValNum(event)">
+                      </div>
+                      <div>
+                        <label>Persona de contacto 2</label>
+                        <input type="text" name="contact_name_2" placeholder="Nombre" onkeypress="return regValText(event)">
+                        <select name="contact_rel_2">
+                          <option value="">Parentesco</option>
+                          <option>Familiar</option>
+                          <option>Vecino</option>
+                          <option>Amigo</option>
+                        </select>
+                        <input type="tel" name="contact_phone_2" placeholder="Teléfono" onkeypress="return regValNum(event)">
+                      </div>
+                      <div>
+                        <label>Persona de contacto 3</label>
+                        <input type="text" name="contact_name_3" placeholder="Nombre" onkeypress="return regValText(event)">
+                        <select name="contact_rel_3">
+                          <option value="">Parentesco</option>
+                          <option>Familiar</option>
+                          <option>Vecino</option>
+                          <option>Amigo</option>
+                        </select>
+                        <input type="tel" name="contact_phone_3" placeholder="Teléfono" onkeypress="return regValNum(event)">
+                      </div>
+                    </div>
+
+                    <button type="submit" class="reg-btn-submit">Registrarse</button>
+                  </form>
+                </div>
+
+                <!-- Inicio de sesión -->
+                <div class="reg-card">
+                  <h2>Inicia Sesión</h2>
+                  <form method="post" action="valUsr.jsp">
+                    <input type="text" name="usr" placeholder="Correo" required>
+                    <input type="password" name="pass" placeholder="Contraseña" required>
+                    <button type="submit" class="reg-btn-submit">Ingresar</button>
+                  </form>
+                  Si ya tienes una cuenta inicia sesion
+                </div>
+
+              </div>
+            </section>
+
+            
+
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
+
+  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
+  <script>
+    // Populate Mexican states/municipios/colonias from JSON
+    fetch('mx_divisions.json')
+      .then(r=>r.json())
+      .then(data=>{
+        // keep in-memory reference for validation and use
+        try{ window.mx_divisions = data; }catch(e){}
+        // also cache for offline/fallback
+        try{ localStorage.setItem('mx_divisions_cache', JSON.stringify(data)); }catch(e){}
+
+        const stateSelect = document.getElementById('mx_state');
+        const municipioSelect = document.getElementById('mx_municipio');
+        const coloniaSelect = document.getElementById('mx_colonia');
+        Object.keys(data).sort((a,b)=>a.localeCompare(b,'es')).forEach(state=>{
+          const opt = document.createElement('option'); opt.value = state; opt.textContent = state; stateSelect.appendChild(opt);
+        });
+        stateSelect.addEventListener('change', ()=>{
+          municipioSelect.innerHTML = '<option value="">-- Selecciona municipio --</option>';
+          coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
+          const muns = data[stateSelect.value] || {};
+          Object.keys(muns).sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; municipioSelect.appendChild(o); });
+        });
+        municipioSelect.addEventListener('change', ()=>{
+          coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
+          const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
+          cols.sort((x,y)=> (x.name||'').localeCompare(y.name||'','es')).forEach(c=>{ const o=document.createElement('option'); o.value=c.name; o.textContent=c.name; coloniaSelect.appendChild(o); });
+        });
+        // when colonia changes, autofill CP if available
+        coloniaSelect.addEventListener('change', ()=>{
+          try{
+            const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
+            const sel = coloniaSelect.value;
+            const found = cols.find(x=>x.name===sel);
+            if(found && found.cp){ const cpInput = document.querySelector('input[name="cp"]'); if(cpInput) cpInput.value = found.cp; }
+          }catch(e){}
+        });
+      })
+      .catch(err=>{
+        console.error('Error cargando mx_divisions.json',err);
+        // attempt to load cache
+        try{
+          const cached = JSON.parse(localStorage.getItem('mx_divisions_cache')||'{}');
+          if(Object.keys(cached).length>0){ window.mx_divisions = cached; const stateSelect=document.getElementById('mx_state'); Object.keys(cached).forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; stateSelect.appendChild(opt); }); }
+        }catch(e){ }
+      });
+
+    // Validation helpers
+    const curpRegex = /^[A-ZÑ]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i;
+    const rfcRegex = /^([A-ZÑ&]{3,4})\d{6}([A-Z0-9]{3})?$/i;
+
+        document.querySelector('form[action="desplegar.jsp"]').addEventListener('submit', function(e){
+      const curp = this.querySelector('input[name="curp"]').value.trim();
+      const rfc = this.querySelector('input[name="rfc"]').value.trim();
+      const email = this.querySelector('input[name="email"]').value.trim();
+      const idType = this.querySelector('select[name="id_type"]').value;
+      const idNumber = this.querySelector('input[name="id_number"]').value.trim();
+      if(!curpRegex.test(curp)){
+        e.preventDefault(); alert('CURP no válido. Verifica el formato.'); return false;
+      }
+      if(rfc && !rfcRegex.test(rfc)){
+        e.preventDefault(); alert('RFC no válido.'); return false;
+      }
+      if(!/.+@.+\..+/.test(email)){
+        e.preventDefault(); alert('Correo electrónico no válido.'); return false;
+      }
+      // Validate CP matches selected colonia
+      const selectedCol = document.getElementById('mx_colonia').value;
+      const cpInput = this.querySelector('input[name="cp"]').value.trim();
+      if(selectedCol){
+        try{
+          const divisions = window.mx_divisions || JSON.parse(localStorage.getItem('mx_divisions_cache') || '{}');
+          let mismatch = false;
+          for(const s of Object.keys(divisions||{})){
+            const muns = divisions[s];
+            for(const mun of Object.keys(muns||{})){
+              const cols = muns[mun] || [];
+              for(const c of cols){ if(c.name===selectedCol && c.cp && c.cp!==cpInput){ mismatch = true; break; } }
+              if(mismatch) break;
+            }
+            if(mismatch) break;
+          }
+          if(mismatch){ e.preventDefault(); alert('El Código Postal no coincide con la colonia seleccionada.'); return false; }
+        }catch(_){ }
+      }
+      // Simple ID rules
+      if(idType === 'INE' && idNumber.length < 15){ e.preventDefault(); alert('INE debe tener al menos 15 caracteres.'); return false; }
+      if(idType === 'Pasaporte' && idNumber.length < 6){ e.preventDefault(); alert('Pasaporte invalido.'); return false; }
+      return true;
+    });
+  </script>
+</body>
+</html>

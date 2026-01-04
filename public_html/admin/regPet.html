@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Registrar Mascotas — TechSide</title>
+        <link rel="stylesheet" href="../css/universalCss.css" type="text/css">
+        <link rel="stylesheet" href="../css/divs.css" type="text/css">
+        <link rel="stylesheet" href="../css/pInicio.css" type="text/css">
+        <link rel="stylesheet" href="../css/initSes.css" type="text/css">
+    </head>
+
+    <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+        <div class="login-content">
+            <span class="close" onclick="document.getElementById('login-modal').style.display = 'none'">&times;</span>
+            <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
+            <form class="login-form">
+                <h2>Iniciar Sesión</h2>
+                <input type="text" placeholder="Usuario">
+                <input type="password" placeholder="Contraseña">
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openLogin() {
+            document.getElementById('login-modal').style.display = 'flex';
+        }
+
+        function closeLogin() {
+            document.getElementById('login-modal').style.display = 'none';
+        }
+
+        // Cierra si se hace clic fuera del cuadro de login
+        function closeOnOutsideClick(event) {
+            const modal = document.getElementById('login-modal');
+            const box = modal.querySelector('.login-box');
+
+            if (!box.contains(event.target)) {
+                closeLogin();
+            }
+        }
+
+        function regValNum(event) {
+            const numeros = "1234567890";
+            const tecla = String.fromCharCode(event.which || event.keyCode);
+            if (numeros.indexOf(tecla) === -1) {
+                alert("Por favor, ingresa solo números");
+                return false;
+            }
+            return true;
+        }
+
+        function regValText(event) {
+            const letras = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ ";
+            const tecla = String.fromCharCode(event.which || event.keyCode);
+            if (letras.indexOf(tecla) === -1) {
+                alert("Por favor, ingresa solo texto");
+                return false;
+            }
+            return true;
+        }
+    </script>
+    <body>
+        <header class="site-header">
+            <div class="container header-inner">
+                <a class="brand" href="/">Clinica</a>
+                <nav class="main-nav" aria-label="Navegación principal">
+                    <a href="initPag.html">Inicio</a>
+                    <a href="prodCatalog.html">Tienda</a>
+                    <a href="horario.html">Disponibilidad</a>
+                    <a href="listas.html">Mis mascotas</a>
+                    <a href="regUser.html">Mi cuenta</a>
+                </nav>
+                <div class="header-actions">
+                    <a class="active" href="initPag.html">Registrarse</a>
+                    <!--<button class="btn-ghost">Registrarse</button>-->
+                    <button class="btn-primary" onclick="location.href='formAgregar.html'">Entrar</button>
+                </div>
+            </div>
+        </header>
+
+        <section id="reg-section">
+            <div class="reg-container">
+
+                                <!-- Un solo formulario que engloba ambas tarjetas -->
+                                <form id="regPetForm" method="post" action="desplegar.jsp" class="form-size" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;width:100%;">
+
+                                        <!-- Owner selector (visible para admin) -->
+                                        <div style="width:100%;">
+                                            <label for="ownerSearch">Propietario (buscar o seleccionar) — solo admin:</label>
+                                            <input list="ownersList" id="ownerSearch" name="ownerSearch" placeholder="Buscar propietario...">
+                                            <datalist id="ownersList"></datalist>
+                                            <label style="display:block;margin-top:8px"><input type="checkbox" id="noOwner"> Registrar mascota sin dueño</label>
+                                        </div>
+
+                    <!-- Primera tarjeta -->
+                    <div class="reg-card">
+                        <h2>Datos generales</h2>
+
+                        <select id="tipo" required>
+                            <option value="">-- Selecciona tipo --</option>
+                            <option value="perro">🐶 Perro</option>
+                            <option value="gato">🐱 Gato</option>
+                            <option value="ave">🦜 Ave</option>
+                            <option value="reptil">🦎 Reptil</option>
+                        </select>
+
+                        <!-- Campos comunes -->
+                        <input type="text" id="nombre" placeholder="Nombre" class="hidden" required>
+                        <input type="text" id="color" placeholder="Color" class="hidden" required>
+                        <input type="text" id="senas" placeholder="Señas particulares" class="hidden">
+                        <input type="number" id="edad" placeholder="Edad" class="hidden" required>
+                        <input type="text" id="estadoSalud" placeholder="Estado de salud" class="hidden">
+                        <input type="text" id="vacunas" placeholder="Vacunas" class="hidden">
+                        <label class="hidden"><input type="checkbox" id="esterilizado"> Esterilizado</label>
+                        <input type="text" id="microchip" placeholder="Número de microchip" class="hidden">
+                        <input type="number" step="0.1" id="peso" placeholder="Peso (kg)" class="hidden">
+
+                        <!-- Campos específicos por tipo -->
+                        <!-- Perro -->
+                        <select id="raza" class="hidden">
+                            <option value="">-- Selecciona raza --</option>
+                        </select>
+                        <input type="text" id="tamano" placeholder="Tamaño" class="hidden">
+                        <input type="text" id="tipoPelo" placeholder="Tipo de pelo" class="hidden">
+                        <input type="text" id="colorPelo" placeholder="Color de pelo" class="hidden">
+
+                        <!-- Gato -->
+                        <input type="text" id="colorOjos" placeholder="Color de ojos" class="hidden">
+                        <input type="text" id="tipoPeloGato" placeholder="Tipo de pelo" class="hidden">
+
+                        <!-- Ave -->
+                        <select id="especie" class="hidden">
+                            <option value="">-- Selecciona especie --</option>
+                        </select>
+                        <input type="text" id="envergadura" placeholder="Envergadura" class="hidden">
+                        <input type="text" id="colorPlumas" placeholder="Color de plumas" class="hidden">
+
+                        <!-- Reptil -->
+                        <input type="text" id="especieReptil" placeholder="Especie" class="hidden">
+                        <input type="text" id="longitud" placeholder="Longitud" class="hidden">
+                        <input type="text" id="temperaturaHabitat" placeholder="Temperatura del hábitat" class="hidden">
+
+                        <!-- Fotografías obligatorias -->
+                        <input type="file" id="fotoFrontal" accept="image/*" class="hidden" required>
+                        <input type="file" id="fotoLateral" accept="image/*" class="hidden" required>
+                        <input type="file" id="fotoConTutor" accept="image/*" class="hidden" required>
+
+
+
+                    </div>
+
+                    <!-- Segunda tarjeta -->
+                    <div class="reg-card">
+                        <h2>Historial médico</h2>
+                                                <label>Cuadro de vacunación:</label>
+                                                <input type="file" name="vacunas" required>
+                                                <label>Fecha de última desparasitación:</label>
+                                                <input type="date" name="desparasitacion">
+                                                <input type="text" name="ruac" id="ruacField" placeholder="RUAC (si tiene)">
+                                                <label>Imagen de tu mascota:</label>
+                                                <input type="file" name="foto_mascota" required>
+
+                                                <div style="margin-top:12px">
+                                                    <button type="submit" class="reg-btn-submit">Registrar Mascota</button>
+                                                </div>
+                    </div>
+
+                </form>
+            </div>
+        </section>
+
+
+
+
+
+        <footer class="site-footer">
+            <div class="container footer-inner">
+                <p>© <span id="year"></span> TechSide</p>
+                <small class="muted">Términos y condiciones · Política de privacidad</small>
+            </div>
+        </footer>
+
+        <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
+        <script>
+            // Cargar razas/especies desde JSON (archivo admin/razas.json)
+            fetch('razas.json')
+                .then(r => r.json())
+                .then(razasData => {
+                    const razas = razasData;
+
+                    const campos = {
+                        "perro": ["nombre", "raza", "sexo", "fechaNacimiento", "tamano", "tipoPelo", "colorPelo", "comidas", "medicinas"],
+                        "gato": ["nombre", "raza", "sexo", "fechaNacimiento", "colorOjos", "tipoPelo", "comidas", "medicinas"],
+                        "ave": ["nombre", "especie", "sexo", "fechaNacimiento", "envergadura", "colorPlumas", "comidas", "medicinas"],
+                        "reptil": ["nombre", "especie", "sexo", "fechaNacimiento", "longitud", "temperaturaHabitat", "comidas", "medicinas"]
+                    };
+
+                    const tipo = document.getElementById('tipo');
+                    const raza = document.getElementById('raza');
+                    const especie = document.getElementById('especie');
+
+                    tipo.addEventListener('change', () => {
+                        const seleccion = tipo.value;
+
+                        // Ocultar todos los campos primero
+                        Object.values(campos).flat().forEach(id => {
+                            const campo = document.getElementById(id);
+                            if (campo)
+                                campo.classList.add('hidden');
+                        });
+
+                        // Mostrar los campos correspondientes al tipo seleccionado
+                        if (campos[seleccion]) {
+                            campos[seleccion].forEach(id => {
+                                const campo = document.getElementById(id);
+                                if (campo)
+                                    campo.classList.remove('hidden');
+                            });
+                        }
+
+                        // Manejo de raza/especie desde JSON
+                        if (seleccion === "perro" || seleccion === "gato") {
+                            raza.classList.remove('hidden');
+                            raza.innerHTML = '<option value="">-- Selecciona raza --</option>';
+                            (razas[seleccion] || []).forEach(r => {
+                                const option = document.createElement('option');
+                                option.value = r;
+                                option.textContent = r;
+                                raza.appendChild(option);
+                            });
+                            especie.classList.add('hidden');
+                            especie.innerHTML = '<option value="">-- Selecciona especie --</option>';
+                        } else if (seleccion === "ave" || seleccion === "reptil") {
+                            especie.classList.remove('hidden');
+                            especie.innerHTML = '<option value="">-- Selecciona especie --</option>';
+                            (razas[seleccion] || []).forEach(r => {
+                                const option = document.createElement('option');
+                                option.value = r;
+                                option.textContent = r;
+                                especie.appendChild(option);
+                            });
+                            raza.classList.add('hidden');
+                            raza.innerHTML = '<option value="">-- Selecciona raza --</option>';
+                        } else {
+                            // Ninguna opción seleccionada
+                            raza.classList.add('hidden');
+                            raza.innerHTML = '<option value="">-- Selecciona raza --</option>';
+                            especie.classList.add('hidden');
+                            especie.innerHTML = '<option value="">-- Selecciona especie --</option>';
+                        }
+                    });
+                })
+                .catch(err => console.error('Error cargando razas.json:', err));
+
+                // --- Owners list and session gating ---
+                (function(){
+                    const isLogged = localStorage.getItem('isLoggedIn') === 'true';
+                    const role = localStorage.getItem('role') || 'guest';
+                    const form = document.getElementById('regPetForm');
+                    const ownerSearch = document.getElementById('ownerSearch');
+                    const ownersList = document.getElementById('ownersList');
+                    const noOwnerCheckbox = document.getElementById('noOwner');
+
+                    if(!isLogged){
+                        form.innerHTML = '<div style="padding:20px"><p>Debe iniciar sesión para registrar una mascota. <button onclick="openLogin()" class="btn-primary">Entrar</button></p></div>';
+                        return;
+                    }
+
+                    // If admin, load owners for selection; otherwise hide owner search
+                    if(role === 'admin'){
+                        fetch('owners.json').then(r=>r.json()).then(data=>{
+                            (data || []).forEach(o => {
+                                const opt = document.createElement('option'); opt.value = o.name; ownersList.appendChild(opt);
+                            });
+                        }).catch(()=>{
+                            // fallback demo
+                            ['María G.','Carlos R.','Luis P.'].forEach(n=>{ const opt=document.createElement('option'); opt.value=n; ownersList.appendChild(opt); });
+                        });
+                    } else {
+                        // hide ownerSearch for regular clients
+                        ownerSearch.style.display = 'none';
+                        ownersList.innerHTML = '';
+                    }
+
+                    noOwnerCheckbox.addEventListener('change', ()=>{
+                        if(noOwnerCheckbox.checked){ ownerSearch.disabled = true; ownerSearch.value = ''; }
+                        else ownerSearch.disabled = false;
+                    });
+                })();
+
+            // Arreglar cierre del modal cuando se hace clic fuera del cuadro de login
+            function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+            function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
+            function closeOnOutsideClick(event) {
+                const modal = document.getElementById('login-modal');
+                const box = modal && modal.querySelector('.login-content');
+                if (modal && box && !box.contains(event.target)) {
+                    closeLogin();
+                }
+            }
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tienda — TechSide Vet</title>
+  
+  <link rel="stylesheet" href="../css/universalCss.css">
+  <link rel="stylesheet" href="../css/sidebar.css">
+  <style>
+      body { padding-top: 0; }
+      /* Ajuste para que el contenido no quede debajo del sidebar en desktop */
+      @media (min-width: 880px) {
+          .contenido-tienda { margin-left: 0px; transition: margin-left 0.3s; }
+          .sidebar.active ~ .contenido-tienda { margin-left: 300px; }
+      }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <div style="display:flex; align-items:center; gap:15px;">
+          <button id="menu-toggle" style="background:#16a34a; border:1px solid #16a34a; font-size:24px; color:#fff; padding:6px 10px; border-radius:6px">&#9776;</button>
+          <a class="brand" href="initPag.html">🐶 TechSide Vet</a>
+      </div>
+      
+      <nav class="main-nav">
+        <a href="initPag.html">Inicio</a>
+        <a class="active" href="prodCatalog.html">Tienda</a>
+        <a href="listas.html">Mis Mascotas</a>
+        <a href="regUser.html">Cuenta</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar">
+    <div style="padding: 20px; text-align: right;">
+        <span onclick="document.getElementById('sidebar').classList.remove('active')" style="color:white; cursor:pointer; font-size: 24px;">&times;</span>
+    </div>
+    <ul class="sidebar-list">
+        <li><a href="#">Ofertas 🔥</a></li>
+        <li><a href="#">Destacados ⭐</a></li>
+        <hr>
+        <li><a href="#">🐶 Perros</a></li>
+        <li><a href="#">🐱 Gatos</a></li>
+        <li><a href="#">💊 Farmacia</a></li>
+        <li><a href="#">🛁 Higiene</a></li>
+    </ul>
+  </nav>
+
+  <style>
+    /* Override sidebar to be overlay on this page */
+    #sidebar{position:fixed;left:-320px;top:0;height:100%;width:300px;z-index:40;background:var(--surface,#0f172a);transition:left .22s ease}
+    #sidebar.active{left:0}
+    .contenido-tienda{transition:margin-left .2s}
+    /* prevent other CSS from pushing content when sidebar opens */
+    .sidebar.active ~ .contenido-tienda { margin-left: 0 !important }
+    .carrusel img{width:100%;height:100%;object-fit:cover}
+    .carrusel{height:320px;overflow:hidden;border-radius:8px}
+    .producto{border-radius:8px;padding:12px;background:var(--card,#fff);box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:12px}
+    .discount-badge{position:absolute;top:8px;left:8px;background:#f97316;color:#fff;padding:4px 8px;border-radius:4px;font-weight:700}
+  </style>
+
+  <main class="contenido contenido-tienda container">
+      
+        <section class="carrusel-container">
+          <div class="carrusel">
+            <div class="carrusel-item active" style="display:block;height:100%">
+              <img src="../img/extras/doge.jpg" alt="Promo 1"> </div>
+            <div class="carrusel-item" style="height:100%">
+              <img src="../img/extras/Fairy Tail 2.png" alt="Promo 2">
+            </div>
+          </div>
+        </section>
+
+      <div style="text-align:center; margin: 30px 0;">
+          <h1>Catálogo de Productos</h1>
+          <p class="muted">Todo lo que tu mascota necesita, recomendado por veterinarios.</p>
+      </div>
+
+        <div class="productos">
+          <article class="producto" data-category="ofertas" style="position:relative">
+            <div style="position:relative">
+            <img src="../img/extras/doge.jpg" alt="Croquetas" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
+            <div class="discount-badge">-15%</div>
+            </div>
+            <h3>Croquetas Premium</h3>
+            <p class="muted">Adulto Raza Mediana</p>
+            <h2 style="color: #22c55e; margin: 10px 0;">$850.00</h2>
+            <div style="display:flex;gap:8px"> <input type="number" min="1" value="1" style="width:80px"> <button class="btn-primary">Añadir</button> <button class="btn-ghost">Comprar ahora</button></div>
+          </article>
+
+          <article class="producto" data-category="farmacia">
+            <img src="../img/extras/doge.jpg" alt="Pipeta" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
+            <h3>Pipeta Antipulgas</h3>
+            <p class="muted">Protección 3 meses</p>
+            <h2 style="color: #22c55e; margin: 10px 0;">$250.00</h2>
+            <div style="display:flex;gap:8px"> <input type="number" min="1" value="1" style="width:80px"> <button class="btn-primary">Añadir</button> <button class="btn-ghost">Comprar ahora</button></div>
+          </article>
+
+           <article class="producto" data-category="juguetes">
+          <img src="../img/extras/doge.jpg" alt="Juguete" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
+          <h3>Juguete Mordedera</h3>
+          <p class="muted">Alta resistencia</p>
+          <h2 style="color: #22c55e; margin: 10px 0;">$120.00</h2>
+          <div style="display:flex;gap:8px"> <input type="number" min="1" value="1" style="width:80px"> <button class="btn-primary">Añadir</button> <button class="btn-ghost">Comprar ahora</button></div>
+        </article>
+        </div>
+
+        <!-- Right-side sections (category banners) -->
+        <aside id="shop-sections" style="position:fixed;right:20px;top:140px;width:220px;display:flex;flex-direction:column;gap:12px">
+          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
+            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Estética y baño</h4>
+            <a class="btn-ghost" href="estetica.html">Ver sección</a>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
+            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Alimentos</h4>
+            <a class="btn-ghost" href="alimentos.html">Ver sección</a>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
+            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Accesorios</h4>
+            <a class="btn-ghost" href="accesorios.html">Ver sección</a>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
+            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Farmacia</h4>
+            <a class="btn-ghost" href="farmacia.html">Ver sección</a>
+          </div>
+        </aside>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© TechSide</p>
+    </div>
+  </footer>
+
+  <div id="login-modal" class="login-modal" onclick="if(event.target===this)this.style.display='none'">
+    <div class="login-content">
+      <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+      <form class="login-form">
+        <h2>Ingresar</h2>
+        <input type="text" placeholder="Usuario"><input type="password" placeholder="Contraseña">
+        <button class="btn-primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Lógica del Menú
+    const toggleBtn = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+
+    // Lógica del Login
+    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+
+    // Carrusel Simple
+    let index = 0;
+    const items = document.querySelectorAll('.carrusel-item');
+    if(items.length > 0){
+        function showSlide() {
+            items.forEach(el => el.style.display = 'none');
+            items[index].style.display = 'block';
+            index = (index + 1) % items.length;
+            setTimeout(showSlide, 4000);
+        }
+        showSlide();
+    }
+  </script>
+</body>
+</html>

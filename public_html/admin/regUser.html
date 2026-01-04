@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>— TechSide</title>
+  <link rel="stylesheet" href="../css/userSet.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/">Clinica</a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="active" href="initPag.html">Inicio</a>
+        <a href="prodCatalog.html">Tienda</a>
+        <a href="horario.html">Disponibilidad</a>
+        <a href="listas.html">Mis mascotas</a>
+        <a href="regUser.html">Mi cuenta</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-ghost">Registrarse</button>
+        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero pequeño / breadcrumbs -->
+  <section class="hero">
+    <div class="container">
+      <h1>Mi cuenta</h1>
+      <p class="muted">Gestiona tu perfil, contraseñas, mascotas y ajustes.</p>
+    </div>
+  </section>
+
+  <!-- Contenido principal: sidebar + main -->
+  <main class="container layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="profile-card">
+        <div class="avatar">PA</div>
+        <div class="profile-info">
+          <strong>Patograit A.</strong>
+          <small>Usuario</small>
+        </div>
+      </div>
+
+      <nav class="account-nav">
+        <a href="#perfil" class="is-active">Perfil</a>
+        <a href="listas.html">Mis mascotas</a>
+        <a href="#historial">Historial</a>
+        <a href="#ajustes">Ajustes</a>
+        <button id="logoutBtn" class="btn-ghost" style="width:100%;text-align:left">Cerrar sesión</button>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <section class="main">
+      <!-- Perfil / formulario -->
+      <article id="perfil" class="card">
+        <h2>Información del perfil</h2>
+        <form class="form-grid" autocomplete="off">
+          <label>
+            Nombre
+            <input type="text" name="nombre" value="Patograit A." />
+          </label>
+
+          <label>
+            Email
+            <input type="email" name="email" value="usuario@ejemplo.com" />
+          </label>
+
+          <label>
+            Cambiar avatar
+            <input type="file" name="avatar" accept="image/*" />
+          </label>
+
+          <label class="full">
+            Biografía
+            <textarea name="bio" rows="4">Gusta ver anime y coleccionar listas.</textarea>
+          </label>
+
+          <div class="form-actions full">
+            <button type="submit" class="btn-primary">Guardar cambios</button>
+            <button type="button" class="btn-ghost">Cancelar</button>
+          </div>
+        </form>
+      </article>
+
+      <!-- Seguridad -->
+      <article id="ajustes" class="card">
+        <h2>Seguridad</h2>
+        <form class="form-grid">
+          <label>
+            Contraseña actual
+            <input type="password" name="current" />
+          </label>
+
+          <label>
+            Nueva contraseña
+            <input type="password" name="newpass" />
+          </label>
+
+          <label>
+            Repetir nueva contraseña
+            <input type="password" name="newpass2" />
+          </label>
+
+          <div class="form-actions full">
+            <button type="submit" class="btn-primary">Actualizar contraseña</button>
+          </div>
+        </form>
+      </article>
+
+      <!-- Mis listas / ejemplo -->
+      <article id="listas" class="card">
+        <h2>Mis mascotas</h2>
+        <a href="listas.html" style="display:block;text-decoration:none;color:inherit">
+          <div style="display:flex;align-items:center;gap:12px">
+            <img id="mini-avatar" src="../img/extras/doge.jpg" alt="avatar" style="width:72px;height:72px;object-fit:cover;border-radius:6px">
+            <div>
+              <div id="mini-name" style="font-weight:700">Firulais</div>
+              <div id="mini-age" class="muted">3 años</div>
+              <div id="mini-status" style="margin-top:6px;color:#16a34a">con cita</div>
+            </div>
+          </div>
+        </a>
+      </article>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide — Plantilla de cuenta.</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.querySelectorAll('.account-nav a').forEach(a => {
+      a.addEventListener('click', e => {
+        document.querySelectorAll('.account-nav a').forEach(x => x.classList.remove('is-active'));
+        e.currentTarget.classList.add('is-active');
+      });
+    });
+
+    // Logout simple handler
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{
+      localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userName'); localStorage.removeItem('userAvatar');
+      location.href = 'initPag.html';
+    });
+  </script>
+</body>
+</html>
