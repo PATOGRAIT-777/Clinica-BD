@@ -66,6 +66,22 @@
     .carrusel{height:320px;overflow:hidden;border-radius:8px}
     .producto{border-radius:8px;padding:12px;background:var(--card,#fff);box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:12px}
     .discount-badge{position:absolute;top:8px;left:8px;background:#f97316;color:#fff;padding:4px 8px;border-radius:4px;font-weight:700}
+
+    /* Vertical category sections with horizontal scrollers */
+    #shop-sections-vertical{margin-top:20px;display:flex;flex-direction:column;gap:18px}
+    .section-row{background:#fff;padding:12px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+    .section-row .row-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+    .section-row h4{margin:0}
+    .section-scroller{overflow-x:auto;display:flex;gap:12px;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+    .section-card{min-width:160px;width:160px;flex:0 0 auto;background:var(--card,#fff);border-radius:8px;padding:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04);text-align:center}
+    .section-card img{width:100%;height:100px;object-fit:cover;border-radius:6px}
+    .section-card h5{font-size:14px;margin:8px 0 4px}
+    .section-card p{font-size:12px;color:var(--muted,#6b7280);margin:0}
+    .section-card .price{color:#22c55e;font-weight:700;margin-top:6px}
+    @media (min-width:1000px){
+      /* keep layout comfortable on wide screens */
+      .contenido-tienda{max-width:1100px}
+    }
   </style>
 
   <main class="contenido contenido-tienda container">
@@ -114,25 +130,116 @@
         </article>
         </div>
 
-        <!-- Right-side sections (category banners) -->
-        <aside id="shop-sections" style="position:fixed;right:20px;top:140px;width:220px;display:flex;flex-direction:column;gap:12px">
-          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
-            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Estética y baño</h4>
-            <a class="btn-ghost" href="estetica.html">Ver sección</a>
+        <!-- Vertical stacked sections with horizontal scrollers (replaces right-side fixed aside) -->
+        <section id="shop-sections-vertical">
+          <div class="section-row">
+            <div class="row-header">
+              <h4>Estética y baño</h4>
+              <a class="a-link-normal" href="estetica.html">Ver más</a>
+            </div>
+            <div class="section-scroller">
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="A">
+                <h5>Shampoo profesional</h5>
+                <p class="muted">250 ml</p>
+                <div class="price">$120</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="B">
+                <h5>Cortaúñas</h5>
+                <p class="muted">Acero inoxidable</p>
+                <div class="price">$80</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="C">
+                <h5>Toalla microfibra</h5>
+                <p class="muted">Secado rápido</p>
+                <div class="price">$60</div>
+              </div>
+            </div>
           </div>
-          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
-            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Alimentos</h4>
-            <a class="btn-ghost" href="alimentos.html">Ver sección</a>
+
+          <div class="section-row">
+            <div class="row-header">
+              <h4>Alimentos</h4>
+              <a class="a-link-normal" href="alimentos.html">Ver más</a>
+            </div>
+            <div class="section-scroller">
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="A">
+                <h5>Croquetas Premium</h5>
+                <p class="muted">Adulto raza mediana</p>
+                <div class="price">$850</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="B">
+                <h5>Snack dental</h5>
+                <p class="muted">Paquete 30pz</p>
+                <div class="price">$150</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="C">
+                <h5>Alimento húmedo</h5>
+                <p class="muted">80 g</p>
+                <div class="price">$30</div>
+              </div>
+            </div>
           </div>
-          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
-            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Accesorios</h4>
-            <a class="btn-ghost" href="accesorios.html">Ver sección</a>
+
+          <div class="section-row">
+            <div class="row-header">
+              <h4>Accesorios</h4>
+              <a class="a-link-normal" href="accesorios.html">Ver más</a>
+            </div>
+            <div class="section-scroller">
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="A">
+                <h5>Juguete Mordedera</h5>
+                <p class="muted">Alta resistencia</p>
+                <div class="price">$120</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="B">
+                <h5>Correa reflectante</h5>
+                <p class="muted">Largo 1.5m</p>
+                <div class="price">$90</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="C">
+                <h5>Cama orthopédica</h5>
+                <p class="muted">Mediana</p>
+                <div class="price">$450</div>
+              </div>
+            </div>
           </div>
-          <div style="background:#fff;padding:8px;border-radius:8px;text-align:center">
-            <img src="../img/extras/doge.jpg" style="width:100%;height:120px;object-fit:cover;border-radius:6px"><h4>Farmacia</h4>
-            <a class="btn-ghost" href="farmacia.html">Ver sección</a>
+
+          <div class="section-row">
+            <div class="row-header">
+              <h4>Farmacia</h4>
+              <a class="a-link-normal" href="farmacia.html">Ver más</a>
+            </div>
+            <div class="section-scroller">
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="A">
+                <h5>Pipeta Antipulgas</h5>
+                <p class="muted">Protección 3 meses</p>
+                <div class="price">$250</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="B">
+                <h5>Vacuna</h5>
+                <p class="muted">Fiebre canina</p>
+                <div class="price">$320</div>
+              </div>
+              <div class="section-card">
+                <img src="../img/extras/doge.jpg" alt="C">
+                <h5>Suplemento</h5>
+                <p class="muted">Articulaciones</p>
+                <div class="price">$200</div>
+              </div>
+            </div>
           </div>
-        </aside>
+        </section>
 
   </main>
 

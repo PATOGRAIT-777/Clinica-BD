@@ -69,19 +69,17 @@
   </footer>
 
   <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
-  <!-- Pet detail modal (edit) -->
+  <!-- Pet detail modal (read-only view for clients) -->
   <div id="pet-modal" class="login-modal" style="display:none" onclick="if(event.target===this) this.style.display='none'">
     <div class="login-content">
       <span class="close" onclick="document.getElementById('pet-modal').style.display='none'">&times;</span>
-      <form id="pet-edit-form">
+      <div id="pet-view-form">
         <h2 id="pet-modal-title">Detalle mascota</h2>
         <div id="pet-fields"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button type="button" class="btn-primary" onclick="savePetChanges()">Guardar</button>
           <button type="button" class="btn-ghost" onclick="document.getElementById('pet-modal').style.display='none'">Cerrar</button>
-          <button type="button" class="btn-ghost" id="btn-schedule" onclick="goToBooking()">Agendar cita</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -92,15 +90,15 @@
       if(!pet) return;
       document.getElementById('pet-modal-title').textContent = (pet.name||'Sin nombre') + ' — ' + (pet.species||'N/D');
       const container = document.getElementById('pet-fields'); container.innerHTML='';
-      // full set of fields used on registration (editable)
+      // display fields as read-only text
       const fields = [
         {k:'ruac',label:'Clave RUAC'},
         {k:'name',label:'Nombre'},
         {k:'species',label:'Especie'},
         {k:'age',label:'Edad'},
         {k:'gender',label:'Género'},
-        {k:'sterilized',label:'¿Esterilizado?',type:'checkbox'},
-        {k:'microchipped',label:'¿Tiene microchip?',type:'checkbox'},
+        {k:'sterilized',label:'¿Esterilizado?'},
+        {k:'microchipped',label:'¿Tiene microchip?'},
         {k:'microchipNumber',label:'Número de chip'},
         {k:'size',label:'Tamaño'},
         {k:'primaryColor',label:'Color primario'},
@@ -113,19 +111,20 @@
         {k:'behavior',label:'Comportamiento'},
         {k:'vaccinationCard',label:'Cartilla de vacunación'},
         {k:'lastRabies',label:'Última vacuna de rabia'},
-        {k:'disabled',label:'¿Discapacitada?',type:'checkbox'},
+        {k:'disabled',label:'¿Discapacitada?'},
         {k:'disabilityType',label:'Tipo de discapacidad'},
-        {k:'dewormed',label:'¿Desparasitada?',type:'checkbox'},
+        {k:'dewormed',label:'¿Desparasitada?'},
         {k:'lastDeworm',label:'Última desparasitación'},
         {k:'homeLocation',label:'Ubicación en el hogar'},
         {k:'idMethod',label:'Forma de identificación'}
       ];
       fields.forEach(f=>{
-        const lbl = document.createElement('label'); lbl.textContent = f.label;
-        let inp;
-        if(f.type==='checkbox'){ inp = document.createElement('input'); inp.type='checkbox'; inp.name = f.k; inp.checked = !!pet[f.k]; }
-        else { inp = document.createElement('input'); inp.type = f.type||'text'; inp.name = f.k; inp.value = pet[f.k]||''; }
-        lbl.appendChild(inp); container.appendChild(lbl);
+        const row = document.createElement('div'); row.style.marginBottom='6px';
+        const lbl = document.createElement('div'); lbl.style.fontSize='0.9em'; lbl.style.color='#444'; lbl.textContent = f.label;
+        const val = document.createElement('div'); val.style.fontWeight='600'; val.style.color='#111';
+        const v = (pet[f.k]===true)?'Sí':(pet[f.k]===false?'No':(pet[f.k]||'—'));
+        val.textContent = v;
+        row.appendChild(lbl); row.appendChild(val); container.appendChild(row);
       });
 
       // show last appointment summary (if exists)
@@ -136,31 +135,9 @@
         container.appendChild(info);
       }
 
-      // set schedule button target
-      const scheduleBtn = document.getElementById('btn-schedule');
-      scheduleBtn.dataset.petId = id;
-
       document.getElementById('pet-modal').style.display='flex';
-      document.getElementById('pet-edit-form').dataset.petId = id;
-    }
-
-    function savePetChanges(){
-      const form = document.getElementById('pet-edit-form');
-      const id = parseInt(form.dataset.petId,10);
-      const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-      const pet = pets.find(x=>x.id===id);
-      const inputs = form.querySelectorAll('input');
-      for(const inp of inputs){
-        if(inp.type==='checkbox') pet[inp.name] = inp.checked; else pet[inp.name] = inp.value;
-      }
-      localStorage.setItem('pets_cache', JSON.stringify(pets));
-      document.getElementById('pet-modal').style.display='none';
-      location.reload();
-    }
-
-    function goToBooking(){
-      const form = document.getElementById('pet-edit-form');
-      const id = form.dataset.petId; if(!id) return; location.href = 'citas.html#pet-'+id;
+      // store current pet id for reference (read-only)
+      document.getElementById('pet-view-form').dataset.petId = id;
     }
   </script>
   <script>
@@ -177,15 +154,16 @@
         // cache for modal editing
         window.__pets_cache = pets;
         pets.forEach(p=>{
-          const a = document.createElement('a'); a.href='#'; a.className='card-item';
+          const a = document.createElement('div'); a.className='card-item';
+          a.tabIndex = 0;
           a.dataset.petId = p.id;
           // try to find an appointment for this pet
           const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
           const appt = appointments.find(a0=> a0.petId===p.id || a0.pet===p.name);
           const apptInfo = appt ? `<div class="pet-apt"><small>${appt.branch||appt.branchName||''} • ${appt.date||appt.day||''} ${appt.time||appt.hour||''}</small></div>` : '';
-          const scheduleBtn = `<div style="margin-top:6px"><a class="btn-ghost" href="citas.html#pet-${p.id}">Agendar cita</a></div>`;
+          const scheduleBtn = `<div style="margin-top:6px"><a class="btn-primary" href="citas.html#pet-${p.id}" onclick="event.stopPropagation()">Agendar cita</a></div>`;
           a.innerHTML = `<img src="${p.image}" alt="${p.name}"><div class="card-body"><h3>${p.name}</h3><small>${p.age} · ${p.status || ''}</small>${apptInfo}${scheduleBtn}</div>`;
-          a.addEventListener('click', (e)=>{ e.preventDefault(); openPetDetail(p.id); });
+          a.addEventListener('click', (e)=>{ if(e.target.closest && (e.target.closest('a') || e.target.closest('button'))) return; e.preventDefault(); openPetDetail(p.id); });
           grid.appendChild(a);
         });
       }).catch(err=>{
@@ -195,10 +173,11 @@
         const pets = JSON.parse(localStorage.getItem('pets_cache')||'[]');
         window.__pets_cache = pets;
         pets.forEach(p=>{
-          const a = document.createElement('a'); a.href='#'; a.className='card-item';
+          const a = document.createElement('div'); a.className='card-item'; a.tabIndex=0;
           a.dataset.petId = p.id;
-          a.innerHTML = `<img src="${p.image}" alt="${p.name}"><div class="card-body"><h3>${p.name}</h3><small>${p.age} · ${p.status}</small></div>`;
-          a.addEventListener('click', (e)=>{ e.preventDefault(); openPetDetail(p.id); });
+          const scheduleBtn = `<div style="margin-top:6px"><a class="btn-primary" href="citas.html#pet-${p.id}" onclick="event.stopPropagation()">Agendar cita</a></div>`;
+          a.innerHTML = `<img src="${p.image}" alt="${p.name}"><div class="card-body"><h3>${p.name}</h3><small>${p.age} · ${p.status}</small>${scheduleBtn}</div>`;
+          a.addEventListener('click', (e)=>{ if(e.target.closest && (e.target.closest('a') || e.target.closest('button'))) return; e.preventDefault(); openPetDetail(p.id); });
           grid.appendChild(a);
         });
       });
