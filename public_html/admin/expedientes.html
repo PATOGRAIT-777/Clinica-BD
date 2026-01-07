@@ -19,18 +19,25 @@
     .visit-item{border-top:1px dashed rgba(0,0,0,0.06);padding:8px 0}
     .small{font-size:13px}
     .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
-    .stat{background:#f9fafb;padding:8px;border-radius:6px}
+    .stat{background:linear-gradient(160deg,#0840c2 0%, var(--bg) 100%);padding:8px;border-radius:6px}
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="initPag.html">🐶 TechSide Vet</a>
-      <nav class="main-nav">
-        <a href="initPag.html">Inicio</a>
-        <a href="prodCatalog.html">Tienda</a>
-        <a href="listas.html">Mis Mascotas</a>
-        <a href="regUser.html">Cuenta</a>
+        <a class="brand" href="initPag.html">🐶 TechSide Vet</a>
+        <nav class="main-nav" aria-label="Navegación principal">
+          <a href="dashboard.html">Dashboard</a>
+          <a href="citas.html">Citas</a>
+          <a href="expedientes.html" class="active">Expedientes</a>
+          <a href="listas.html">Mis mascotas</a>
+          <a href="regPetAdmin.html">Registrar mascota</a>
+          <a href="pacientes.html">Pacientes</a>
+          <a href="horario.html">Horario</a>
+          <a href="inventario.html">Inventario</a>
+          <a href="ordenes.html">Órdenes</a>
+          <a href="prodCatalog.html">Tienda</a>
+          <a href="regUser.html">Usuarios</a>
       </nav>
       <div class="header-actions">
         <a href="cart.html" class="btn-ghost" style="position:relative;display:inline-flex;align-items:center;gap:8px">🛒 <span id="cart-count" style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:999px;font-weight:700">0</span></a>
@@ -177,7 +184,12 @@
     </div>
   </main>
 
-  <footer class="site-footer"><div class="container footer-inner"><p>© TechSide</p></div></footer>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
 
   <script>
     // cart count reuse

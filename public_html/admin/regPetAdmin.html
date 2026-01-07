@@ -8,6 +8,32 @@
         <link rel="stylesheet" href="../css/divs.css" type="text/css">
         <link rel="stylesheet" href="../css/pInicio.css" type="text/css">
         <link rel="stylesheet" href="../css/initSes.css" type="text/css">
+        <style>
+            /* Labels: white and slightly larger */
+            .reg-card label { color: #fff; font-size: 13pt; }
+            .reg-card label span { color: inherit; }
+            /* Inputs, selects and textareas: match the site's input style (initSes.css) */
+            .reg-card input, .reg-card select, .reg-card textarea, .reg-card input[type="text"], .reg-card input[type="number"], .reg-card input[type="date"], .reg-card input[type="file"] {
+                padding: 0.9rem 1rem;
+                border: 1px solid #fff;
+                border-radius: 0.5rem;
+                font-size: 1rem;
+                color: #fff;
+                background: linear-gradient(180deg,#071025 0%, var(--bg) 100%);
+                width: 100%;
+                box-sizing: border-box;
+            }
+            /* Checkboxes styled to match inputs and larger */
+            .reg-card input[type=checkbox] { width:14px; height:14px; vertical-align:middle; margin-right:8px; accent-color: #0b76ef; }
+                /* Small helper to hide dependent blocks; make children full-width blocks so layout doesn't break */
+            .dependent { display:none; margin-top:6px; }
+                .dependent > * { display:block; width:100%; margin-top:6px; }
+
+                /* Ensure all direct children of .reg-card use full width and labels are block-level */
+                .reg-card > * { width:100%; }
+                .reg-card label { display:block; text-align:left; }
+                .reg-card .dependent { display:none; flex-direction:column; gap:8px; }
+        </style>
     </head>
 
     <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
@@ -65,13 +91,19 @@
     <body>
         <header class="site-header">
             <div class="container header-inner">
-                <a class="brand" href="/">Clinica</a>
-                <nav class="main-nav" aria-label="Navegación principal">
-                    <a href="initPag.html">Inicio</a>
-                    <a href="prodCatalog.html">Tienda</a>
-                    <a href="horario.html">Disponibilidad</a>
-                    <a href="listas.html">Mis mascotas</a>
-                    <a href="regUser.html">Mi cuenta</a>
+                    <a class="brand" href="initPag.html">🐶 TechSide Vet</a>
+                    <nav class="main-nav" aria-label="Navegación principal">
+                        <a href="dashboard.html">Dashboard</a>
+                        <a href="citas.html">Citas</a>
+                        <a href="expedientes.html">Expedientes</a>
+                        <a href="listas.html">Mis mascotas</a>
+                        <a href="regPetAdmin.html" class="active">Registrar mascota</a>
+                        <a href="pacientes.html">Pacientes</a>
+                        <a href="horario.html">Horario</a>
+                        <a href="inventario.html">Inventario</a>
+                        <a href="ordenes.html">Órdenes</a>
+                        <a href="prodCatalog.html">Tienda</a>
+                        <a href="regUser.html">Usuarios</a>
                 </nav>
                 <div class="header-actions">
                     <a class="active" href="initPag.html">Registrarse</a>
@@ -87,55 +119,85 @@
                                 <!-- Un solo formulario que engloba ambas tarjetas -->
                                 <form id="regPetForm" method="post" action="desplegar.jsp" class="form-size" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;width:100%;">
 
-                                        <!-- Owner selector (visible para admin) -->
-                                        <!-- Mover la búsqueda / opción sin dueño dentro del formulario, alineada a la izquierda -->
-                                        <div style="width:40%;min-width:220px;">
-                                            <div class="reg-card" style="padding:12px;">
-                                                <h3>Propietario (Admin)</h3>
-                                                <label for="ownerSearch">Buscar propietario:</label>
-                                                <input list="ownersList" id="ownerSearch" name="ownerSearch" placeholder="Buscar propietario..." style="width:100%">
-                                                <datalist id="ownersList"></datalist>
-                                                <label style="display:block;margin-top:8px"><input type="checkbox" id="noOwner"> Registrar mascota sin dueño</label>
-                                            </div>
-                                        </div>
+                    <!-- Primera tarjeta -->
+                    <div class="reg-card">
+                                                <h2>Datos generales</h2>
 
-                    <!-- Primera tarjeta (datos principales) -->
-                    <div class="reg-card" style="flex:1;min-width:380px">
-                        <h2>Datos generales</h2>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                          <select id="tipo" name="tipo" required>
-                              <option value="">-- Selecciona tipo --</option>
-                              <option value="perro">🐶 Perro</option>
-                              <option value="gato">🐱 Gato</option>
-                              <option value="ave">🦜 Ave</option>
-                              <option value="reptil">🦎 Reptil</option>
-                          </select>
+                                                <!-- Buscador de dueño + opción "Sin dueño" -->
+                                                <label style="display:inline-block;margin-top:6px"><input type="checkbox" id="noOwner" name="noOwner"> Sin dueño (ocultar campo)</label>
+                                                <label>Dueño:
+                                                    <input list="ownersList" id="ownerSearch" name="ownerName" placeholder="Buscar dueño..." />
+                                                    <datalist id="ownersList"></datalist>
+                                                </label>
+                                                
 
-                          <input type="text" id="ruac" name="ruac" placeholder="Clave RUAC">
-                          <input type="text" id="nombre" name="nombre" placeholder="Nombre" >
-                          <input type="text" id="especie" name="especie" placeholder="Especie (ej. Perro)" >
-                          <input type="number" id="edad" name="edad" placeholder="Edad" >
-                          <select id="genero" name="genero"><option value="">Género</option><option value="hembra">Hembra</option><option value="macho">Macho</option></select>
-                          <label><input type="checkbox" id="esterilizado" name="esterilizado"> Esterilizado</label>
-                          <label><input type="checkbox" id="microchip" name="microchip"> Tiene microchip</label>
-                          <input type="text" id="numeroChip" name="numeroChip" placeholder="Número de chip">
-                          <select id="tamano" name="tamano"><option value="">Tamaño</option><option value="chico">Chico</option><option value="mediano">Mediano</option><option value="grande">Grande</option><option value="muy_grande">Muy grande</option></select>
-                          <input type="text" id="colorPrimario" name="colorPrimario" placeholder="Color primario">
-                          <input type="text" id="colorSecundario" name="colorSecundario" placeholder="Color secundario">
-                          <input type="text" id="cobertura" name="cobertura" placeholder="Cobertura corporal">
-                          <input type="number" step="0.1" id="peso" name="peso" placeholder="Peso (kg)">
-                          <input type="text" id="procedencia" name="procedencia" placeholder="Procedencia (Adopción/Compra)">
-                          <label><input type="checkbox" id="supervisionExterior" name="supervisionExterior"> Supervisión en exterior</label>
-                          <select id="comportamiento" name="comportamiento"><option value="">Comportamiento</option><option>Amigable</option><option>Agresivo</option><option>Neutral</option></select>
-                          <label><input type="checkbox" id="cartillaVacunacion" name="cartillaVacunacion"> Tiene cartilla de vacunación</label>
-                          <input type="date" id="ultimaRabia" name="ultimaRabia">
-                          <label><input type="checkbox" id="discapacitada" name="discapacitada"> Discapacitada</label>
-                          <input type="text" id="tipoDiscapacidad" name="tipoDiscapacidad" placeholder="Tipo de discapacidad">
-                          <label><input type="checkbox" id="desparacitada" name="desparacitada"> Desparasitada</label>
-                          <input type="date" id="ultimaDesparasitacion" name="ultimaDesparasitacion">
-                          <select id="ubicacionHogar" name="ubicacionHogar"><option value="">Ubicación en el hogar</option><option>Interior</option><option>Exterior</option></select>
-                          <select id="formaIdentificacion" name="formaIdentificacion"><option value="">Forma de identificación</option><option>Collar</option><option>Placa</option><option>Microchip</option></select>
-                        </div>
+                                                <select id="tipo" name="tipo" required>
+                                                        <option value="">-- Selecciona tipo --</option>
+                                                        <option value="perro">🐶 Perro</option>
+                                                        <option value="gato">🐱 Gato</option>
+                                                        <option value="ave">🦜 Ave</option>
+                                                        <option value="reptil">🦎 Reptil</option>
+                                                </select>
+
+                                                <!-- Raza / Especie (pobladas desde razas.json) -->
+                                                <select id="raza" name="raza" class="hidden">
+                                                    <option value="">-- Selecciona raza --</option>
+                                                </select>
+                                                <select id="especie" name="especie" class="hidden" required>
+                                                    <option value="">-- Selecciona especie --</option>
+                                                </select>
+
+                                                <!-- Campos solicitados para BD -->
+                                                <input type="text" id="ruac" name="ruac" placeholder="Clave RUAC (opcional)">
+                                                <input type="text" id="nombre" name="nombre" placeholder="Nombre" required>
+                                                <!-- `especie` is now a select populated by script above -->
+                                                <input type="number" id="edad" name="edad" placeholder="Edad" required>
+                                                <select id="genero" name="genero">
+                                                    <option value="">-- Género --</option>
+                                                    <option value="hembra">Hembra</option>
+                                                    <option value="macho">Macho</option>
+                                                </select>
+                                                
+                                                <label><input type="checkbox" id="chk_microchip" name="microchip"> Tiene microchip</label>
+                                                <div id="microchip-details" class="dependent">
+                                                    <label>Fecha colocación microchip (opcional): <input type="date" id="fechaMicrochip" name="fechaMicrochip"></label>
+                                                    <input type="text" id="numeroChip" name="numeroChip" placeholder="Número de chip">
+                                                </div>
+                                                <select id="tamano" name="tamano">
+                                                    <option value="">-- Tamaño --</option>
+                                                    <option value="chico">Chico</option>
+                                                    <option value="mediano">Mediano</option>
+                                                    <option value="grande">Grande</option>
+                                                    <option value="muy_grande">Muy grande</option>
+                                                </select>
+                                                <input type="text" id="colorPrimario" name="colorPrimario" placeholder="Color primario">
+                                                <input type="text" id="colorSecundario" name="colorSecundario" placeholder="Color secundario">
+                                                <input type="text" id="patron" name="patron" placeholder="Patrón de cobertura corporal (pelaje/plumas/escamas)">
+                                                <input type="number" step="0.1" id="peso" name="peso" placeholder="Peso (kg)">
+                                                <label>Foto principal (URL o subir):</label>
+                                                <input type="file" id="fotoFile" name="fotoFile" accept="image/*">
+                                                <select id="procedencia" name="procedencia">
+                                                    <option value="">-- Procedencia --</option>
+                                                    <option value="Adopcion">Adopción</option>
+                                                    <option value="Rescatada">Rescatada</option>
+                                                    <option value="Donada">Donada</option>
+                                                    <option value="Heredada">Heredada</option>
+                                                    <option value="Adquirida">Adquirida</option>
+                                                    <option value="Comprada">Comprada</option>
+                                                </select>
+                                                <label><input type="checkbox" id="supervisionExterior" name="supervisionExterior"> Supervisión en exterior</label>
+
+                                                <select id="ubicacionHogar" name="ubicacionHogar">
+                                                    <option value="">-- Ubicación en el hogar --</option>
+                                                    <option value="Interior">Interior</option>
+                                                    <option value="Exterior">Exterior</option>
+                                                </select>
+                                                <select id="formaIdentificacion" name="formaIdentificacion">
+                                                    <option value="">-- Forma de identificación --</option>
+                                                    <option value="Collar">Collar</option>
+                                                    <option value="Placa">Placa de identificación</option>
+                                                    <option value="Microchip">Microchip</option>
+                                                </select>
 
 
 
@@ -143,14 +205,54 @@
 
                     <!-- Segunda tarjeta -->
                     <div class="reg-card">
-                        <h2>Historial médico</h2>
-                                                <label>Cuadro de vacunación:</label>
-                                                <input type="file" name="vacunas" required>
-                                                <label>Fecha de última desparasitación:</label>
-                                                <input type="date" name="desparasitacion">
-                                                <input type="text" name="ruac" id="ruacField" placeholder="RUAC (si tiene)">
+                        <h2>Historial médico</h2>                                                
+                                                <select id="comportamiento" name="comportamiento">
+                                                    <option value="">-- Comportamiento --</option>
+                                                    <option value="Amigable">Amigable</option>
+                                                    <option value="Agresivo">Agresivo</option>
+                                                    <option value="Neutral">Neutral</option>
+                                                </select>
+
+                                                                                                <label><input type="checkbox" id="chk_esterilizado" name="esterilizado"> Esterilizado</label>
+                                                                                                <div id="esterilizado-details" class="dependent">
+                                                                                                    <label>Fecha de esterilización (opcional): <input type="date" id="fechaEsterilizacion" name="fechaEsterilizacion"></label>
+                                                                                                </div>
+
+                                                
+                                                                                                <label><input type="checkbox" id="chk_discapacitada" name="discapacitada"> Discapacitada</label>
+                                                                                                <div id="discapacitada-details" class="dependent">
+                                                                                                    <input type="text" id="tipoDiscapacidad" name="tipoDiscapacidad" placeholder="Tipo de discapacidad">
+                                                                                                </div>
+                                                
+                                                <label>Última vacuna de la rabia:</label>
+                                                <input type="date" id="ultimaRabia" name="ultimaRabia">
+                                                                                                <label><input type="checkbox" id="chk_cartillaVacunacion" name="cartillaVacunacion"> Tiene cartilla de vacunación</label>
+                                                                                                <!-- Last rabies vaccine remains visible always -->
+                                                                                                <div id="cartilla-details" class="dependent">
+                                                                                                    <label>Cuadro de vacunación (archivo o texto):</label>
+                                                                                                    <input type="file" name="vacunasFile">
+                                                                                                    <input type="text" name="vacunasText" placeholder="Vacunas y fechas">
+                                                                                                </div>
+                                                                                                <label><input type="checkbox" id="chk_desparacitada" name="desparacitada"> Desparasitada</label>
+                                                                                                <div id="desparacitada-details" class="dependent">
+                                                                                                    <label>Fecha de última desparasitación:</label>
+                                                                                                    <input type="date" name="desparasitacion">
+                                                                                                </div>
+
+                                                                                                <label><input type="checkbox" id="chk_alergias" name="chk_alergias"> Alergias</label>
+                                                                                                <div id="alergias-details" class="dependent">
+                                                                                                    <textarea id="alergias" name="alergias" placeholder="Describe alergias conocidas" rows="3"></textarea>
+                                                                                                </div>
+                                                                                                <label><input type="checkbox" id="chk_condiciones" name="chk_condiciones"> Condiciones crónicas / enfermedades</label>
+                                                                                                <div id="condiciones-details" class="dependent">
+                                                                                                    <textarea id="condiciones" name="condiciones" placeholder="Enfermedades crónicas, observaciones" rows="3"></textarea>
+                                                                                                </div>
+                                                                                                <label><input type="checkbox" id="chk_medicamentos" name="chk_medicamentos"> Medicamentos actuales</label>
+                                                                                                <div id="medicamentos-details" class="dependent">
+                                                                                                    <textarea id="medicamentos" name="medicamentos" placeholder="Medicamentos y dosis" rows="2"></textarea>
+                                                                                                </div>
                                                 <label>Imagen de tu mascota:</label>
-                                                <input type="file" name="foto_mascota" required>
+                                                <input type="file" name="foto_mascota">
 
                                                 <div style="margin-top:12px">
                                                     <button type="submit" class="reg-btn-submit">Registrar Mascota</button>
@@ -244,28 +346,128 @@
                 })
                 .catch(err => console.error('Error cargando razas.json:', err));
 
-                // --- Owners list (public) ---
-                (function(){
-                    const role = localStorage.getItem('role') || 'guest';
-                    const ownerSearch = document.getElementById('ownerSearch');
-                    const ownersList = document.getElementById('ownersList');
-                    const noOwnerCheckbox = document.getElementById('noOwner');
+                                // --- Owners list (public) ---
+                                (function(){
+                                        const role = localStorage.getItem('role') || 'guest';
+                                        const ownerSearch = document.getElementById('ownerSearch');
+                                        const ownersList = document.getElementById('ownersList');
+                                        const noOwnerCheckbox = document.getElementById('noOwner');
 
-                    // Always try to populate owners datalist (if available on server); otherwise use demo values
-                    fetch('owners.json').then(r=>r.json()).then(data=>{
-                        (data || []).forEach(o => { const opt=document.createElement('option'); opt.value = o.name; ownersList.appendChild(opt); });
-                    }).catch(()=>{
-                        ['María G.','Carlos R.','Luis P.'].forEach(n=>{ const opt=document.createElement('option'); opt.value=n; ownersList.appendChild(opt); });
-                    });
+                                        // Try to populate owners datalist if the datalist exists
+                                        if(ownersList){
+                                            fetch('owners.json').then(r=>r.json()).then(data=>{
+                                                (data || []).forEach(o => { const opt=document.createElement('option'); opt.value = o.name; ownersList.appendChild(opt); });
+                                            }).catch(()=>{
+                                                ['María G.','Carlos R.','Luis P.'].forEach(n=>{ const opt=document.createElement('option'); opt.value=n; ownersList.appendChild(opt); });
+                                            });
+                                        }
 
-                    // If the user is not admin, keep the ownerSearch visible so clients can link to an existing owner or leave blank
-                    ownerSearch.style.display = 'block';
+                                        // Show ownerSearch by default (if present)
+                                        const ownerLabel = ownerSearch ? ownerSearch.closest('label') : null;
+                                        if(ownerSearch){ ownerSearch.style.display = 'block'; if(ownerLabel) ownerLabel.style.display = 'block'; }
 
-                    noOwnerCheckbox.addEventListener('change', ()=>{
-                        if(noOwnerCheckbox.checked){ ownerSearch.disabled = true; ownerSearch.value = ''; }
-                        else ownerSearch.disabled = false;
-                    });
-                })();
+                                        // Fields that should be hidden when pet has no owner.
+                                        // This list hides elements by ID or by name attribute (for some inputs without IDs).
+                                        const ownerDependentSelectors = [
+                                            // General ownership-related
+                                            '#procedencia',
+                                            '#ubicacionHogar',
+                                            '#formaIdentificacion',
+                                            '#supervisionExterior',
+                                            '#fotoFile',
+                                            // Medical history fields (hide these when no owner),
+                                            // keep: comportamiento, condiciones (condiciones-details), imagen, RUAC
+                                            '#chk_esterilizado',
+                                            '#esterilizado-details',
+                                            '#chk_discapacitada',
+                                            '#discapacitada-details',
+                                            '#ultimaRabia',
+                                            '#chk_cartillaVacunacion',
+                                            '#cartilla-details',
+                                            '[name="vacunasFile"]',
+                                            '[name="vacunasText"]',
+                                            '#chk_desparacitada',
+                                            '#desparacitada-details',
+                                            '#chk_alergias',
+                                            '#alergias-details',
+                                            '#chk_medicamentos',
+                                            '#medicamentos-details'
+                                        ];
+
+                                        function setOwnerDependentHidden(hide){
+                                            ownerDependentSelectors.forEach(sel=>{
+                                                const nodes = document.querySelectorAll(sel);
+                                                nodes.forEach(n=>{
+                                                    // hide associated label elements if present
+                                                    const lab = n.closest('label');
+                                                    if(lab) lab.style.display = hide ? 'none' : '';
+                                                    else {
+                                                        // try label[for="id"] if element has id
+                                                        if(n.id){
+                                                            document.querySelectorAll('label[for="'+n.id+'"]').forEach(l=> l.style.display = hide ? 'none' : '');
+                                                        }
+                                                        // or the immediate previous sibling if it's a label
+                                                        const prev = n.previousElementSibling;
+                                                        if(prev && prev.tagName === 'LABEL') prev.style.display = hide ? 'none' : '';
+                                                        // finally hide the element itself
+                                                        n.style.display = hide ? 'none' : '';
+                                                    }
+                                                    // disable inputs so they won't be submitted
+                                                    if(n.tagName === 'INPUT' || n.tagName === 'SELECT' || n.tagName === 'TEXTAREA') n.disabled = hide;
+                                                    // if we hid a details container, also disable its descendant inputs
+                                                    if(n.querySelectorAll) {
+                                                        n.querySelectorAll('input,select,textarea').forEach(el=> el.disabled = hide);
+                                                    }
+                                                });
+                                            });
+                                        }
+
+                                        // If a noOwner checkbox exists, wire its change handler defensively
+                                        if(noOwnerCheckbox){
+                                            const update = ()=>{
+                                                const checked = noOwnerCheckbox.checked;
+                                                if(ownerSearch){ ownerSearch.disabled = checked; ownerSearch.value = ''; }
+                                                if(ownerLabel) ownerLabel.style.display = checked ? 'none' : '';
+                                                setOwnerDependentHidden(checked);
+                                                // Ensure RUAC is hidden/disabled when 'Sin dueño' is checked
+                                                const ruac = document.getElementById('ruac');
+                                                if(ruac){
+                                                    ruac.style.display = checked ? 'none' : '';
+                                                    ruac.disabled = !!checked;
+                                                    if(checked) ruac.value = '';
+                                                    // hide/show related labels
+                                                    document.querySelectorAll('label[for="ruac"]').forEach(l=> l.style.display = checked ? 'none' : '');
+                                                    const prev = ruac.previousElementSibling;
+                                                    if(prev && prev.tagName === 'LABEL') prev.style.display = checked ? 'none' : '';
+                                                }
+                                            };
+                                            noOwnerCheckbox.addEventListener('change', update);
+                                            // initialize on load
+                                            update();
+                                        }
+                                })();
+
+                                // Toggle dependent fields when checkboxes change
+                                (function(){
+                                        const toggles = [
+                                            ['chk_microchip','microchip-details'],
+                                            ['chk_esterilizado','esterilizado-details'],
+                                            ['chk_discapacitada','discapacitada-details'],
+                                            ['chk_cartillaVacunacion','cartilla-details'],
+                                            ['chk_desparacitada','desparacitada-details'],
+                                            ['chk_alergias','alergias-details'],
+                                            ['chk_condiciones','condiciones-details'],
+                                            ['chk_medicamentos','medicamentos-details']
+                                        ];
+                                        toggles.forEach(([chkId, targetId])=>{
+                                            const chk = document.getElementById(chkId);
+                                            const target = document.getElementById(targetId);
+                                            if(!chk || !target) return;
+                                            // initialize
+                                            target.style.display = chk.checked ? 'block' : 'none';
+                                            chk.addEventListener('change', ()=>{ target.style.display = chk.checked ? 'block' : 'none'; });
+                                        });
+                                })();
 
             // Arreglar cierre del modal cuando se hace clic fuera del cuadro de login
             function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }

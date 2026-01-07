@@ -5,9 +5,28 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Accesorios — TechSide</title>
   <link rel="stylesheet" href="../css/universalCss.css">
+    <link rel="stylesheet" href="../css/pInicio.css" type="text/css">
+
 </head>
 <body>
-  <header class="site-header"><div class="container header-inner"><a class="brand" href="initPag.html">🐶 TechSide Vet</a></div></header>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="initPag.html">🐶 TechSide Vet</a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a href="prodCatalog.html">Tienda</a>        
+        <a href="horario.html">Disponibilidad</a>
+        <a href="listas.html">Mis mascotas</a>
+      </nav>
+      <div class="header-actions">
+        <a href="cart.html" class="btn-ghost" style="position:relative;display:inline-flex;align-items:center;gap:8px">
+          🛒 <span id="cart-count" style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:999px;font-weight:700">0</span>
+        </a>
+        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+      </div>
+    </div>
+  </header>
+  
   <main class="container" style="padding:20px">
     <h1>Accesorios</h1>
     <p class="muted">Collares, correas y complementos.</p>
@@ -38,6 +57,12 @@
       </article>
     </div>
   </main>
-  <footer class="site-footer"><div class="container footer-inner"><p>© TechSide</p></div></footer>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
+  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
 </body>
 </html>

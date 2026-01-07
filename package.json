@@ -1,8 +1,16 @@
 {
     "name": "HTML5Application",
     "version": "1.0.0",
-    "keywords": ["util", "functional", "server", "client", "browser"],
+    "keywords": [
+        "util",
+        "functional",
+        "server",
+        "client",
+        "browser"
+    ],
     "author": "patog",
     "contributors": [],
-    "dependencies": {}
+    "dependencies": {
+        "pg": "^8.16.3"
+    }
 }

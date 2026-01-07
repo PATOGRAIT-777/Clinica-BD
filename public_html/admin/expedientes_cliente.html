@@ -89,7 +89,14 @@
     </div>
   </main>
 
-  <footer class="site-footer"><div class="container footer-inner"><p>© TechSide</p></div></footer>
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> TechSide</p>
+      <small class="muted">Términos y condiciones · Política de privacidad</small>
+    </div>
+  </footer>
+
+  <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
 
   <script>
     // cart count

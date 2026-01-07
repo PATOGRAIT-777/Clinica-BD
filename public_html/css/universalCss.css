@@ -355,3 +355,13 @@ html {
   scrollbar-color: #26DA08 var(--bg);
 }
 
+textarea, input {
+  padding: 0.9rem 1rem;
+                border: 1px solid #fff;
+                border-radius: 0.5rem;
+                font-size: 1rem;
+                color: #fff;
+                background: linear-gradient(180deg,#071025 0%, var(--bg) 100%);
+                width: 100%;
+                box-sizing: border-box;
+            }
