@@ -1,92 +1,135 @@
 /*
-  Script de ejemplo para insertar branches.json, razas.json y mx_divisions.json en Postgres.
-  Requisitos: Node.js, paquete 'pg'. Ejecutar con: node seed_json_import.js <path_to_project_root>
+  Script para poblar la base de datos (seeding) a partir de archivos JSON.
+  - Limpia las tablas relevantes antes de insertar.
+  - Utiliza variables de entorno para la configuración de la DB (.env).
+  - Inserta sucursales, y luego crea usuarios y perfiles para los médicos asociados.
+  - Inserta razas y divisiones territoriales de México.
 
-  Nota: ajusta las rutas a los JSON según la estructura de tu proyecto.
+  Uso: node backend/scripts/seed_json_import.js
 */
 
 const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
+const bcrypt = require('bcryptjs');
 
-if (!process.argv[2]) {
-  console.error('Usage: node seed_json_import.js <project_root_path>');
-  process.exit(1);
-}
+// Cargar variables de entorno desde ../../.env
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const root = process.argv[2];
-const branchesFile = path.join(root, 'public_html', 'admin', 'branches.json');
-const razasFile = path.join(root, 'public_html', 'admin', 'razas.json');
-const mxFile = path.join(root, 'public_html', 'admin', 'mx_divisions.json');
+// Rutas a los archivos JSON, relativas a la ubicación del script
+const branchesFile = path.join(__dirname, '../../../public_html/admin/branches.json');
+const razasFile = path.join(__dirname, '/razas.json');
+const mxFile = path.join(__dirname, '/mx_divisions.json');
 
-// Configura según tu entorno local
 const client = new Client({
-  user: process.env.PGUSER || 'postgres',
-  host: process.env.PGHOST || 'localhost',
-  database: process.env.PGDATABASE || 'postgres',
-  password: process.env.PGPASSWORD || '==PATOGRAIT777==',
-  port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
-async function run(){
+async function seedDatabase() {
   await client.connect();
-  try {
-    // Branches
-    if (fs.existsSync(branchesFile)){
-      const bdata = JSON.parse(fs.readFileSync(branchesFile,'utf8'));
-      // asume estructura { branches: [ { id, name, address, ... } ] } o similar
-      const branches = bdata.branches || bdata;
-      for(const b of branches){
-        const text = `INSERT INTO sucursales(nombre, direccion, telefono, zona_horaria, meta) VALUES ($1,$2,$3,$4,$5)
-          ON CONFLICT (id) DO UPDATE SET nombre=EXCLUDED.nombre, direccion=EXCLUDED.direccion`;
-        const vals = [b.name || b.nombre || 'Sucursal', JSON.stringify(b.address||{}), b.phone||null, b.timezone||null, JSON.stringify(b)];
-        await client.query(text, vals);
-      }
-      console.log('Branches importados:', branches.length);
-    } else console.warn('branches.json no encontrado en', branchesFile);
+  // Iniciar transacción
+  await client.query('BEGIN');
 
-    // Razas
-    if (fs.existsSync(razasFile)){
-      const rdata = JSON.parse(fs.readFileSync(razasFile,'utf8'));
-      // Si razas.json es un objeto por especie: { "Perros": ["Labrador", ...], ... }
-      if (Array.isArray(rdata)){
-        for(const name of rdata){
-          await client.query('INSERT INTO razas(especie,nombre) VALUES ($1,$2) ON CONFLICT DO NOTHING', ['', name]);
-        }
-      } else {
-        for(const especie of Object.keys(rdata)){
-          const lista = rdata[especie] || [];
-          for(const name of lista){
-            await client.query('INSERT INTO razas(especie,nombre) VALUES ($1,$2) ON CONFLICT DO NOTHING', [especie, name]);
+  try {
+    console.log('Limpiando tablas existentes...');
+    // Se truncan en orden inverso a las dependencias para evitar errores de FK
+    await client.query('TRUNCATE TABLE medicos, usuarios, sucursales, razas, mx_divisiones RESTART IDENTITY CASCADE');
+
+    // --- SUCURSALES Y MÉDICOS ---
+    if (fs.existsSync(branchesFile)) {
+      console.log('Importando Sucursales y Médicos...');
+      const bdata = JSON.parse(fs.readFileSync(branchesFile, 'utf8'));
+      const branches = bdata.branches || bdata;
+
+      for (const branch of branches) {
+        // Insertar sucursal y obtener su nuevo ID
+        const sucursalRes = await client.query(
+          'INSERT INTO sucursales(nombre, direccion, telefono) VALUES ($1, $2, $3) RETURNING id',
+          [branch.name, JSON.stringify({ "direccion": branch.address }), branch.phone || null]
+        );
+        const sucursalId = sucursalRes.rows[0].id;
+        console.log(`- Sucursal '${branch.name}' creada con ID: ${sucursalId}`);
+
+        // Insertar médicos asociados
+        if (branch.doctors && branch.doctors.length > 0) {
+          for (const doc of branch.doctors) {
+            // 1. Crear el usuario para el médico
+            const email = `${doc.name.toLowerCase().replace(/\s/g, '.')}@techside.com`;
+            const salt = await bcrypt.genSalt(10);
+            const password_hash = await bcrypt.hash('password123', salt); // Contraseña por defecto
+
+            const userRes = await client.query(
+              `INSERT INTO usuarios (nombre_completo, email, password_hash, rol) VALUES ($1, $2, $3, 'medico') RETURNING id`,
+              [doc.name, email, password_hash]
+            );
+            const usuarioId = userRes.rows[0].id;
+
+            // 2. Crear el perfil del médico
+            await client.query(
+              `INSERT INTO medicos (id, usuario_id, nombre, sucursal_id, especialidades) VALUES (DEFAULT, $1, $2, $3, $4)`,
+              [usuarioId, doc.name, sucursalId, [doc.specialty]]
+            );
+            console.log(`  - Médico '${doc.name}' creado y asignado a '${branch.name}'.`);
           }
         }
       }
-      console.log('Razas importadas');
-    } else console.warn('razas.json no encontrado en', razasFile);
+    } else {
+      console.warn(`Archivo no encontrado: ${branchesFile}`);
+    }
 
-    // MX Divisiones
-    if (fs.existsSync(mxFile)){
-      const mx = JSON.parse(fs.readFileSync(mxFile,'utf8'));
-      // mx expected: { Estado: { Municipio: [colonia1, colonia2, ...] } }
+    // --- RAZAS ---
+    if (fs.existsSync(razasFile)) {
+      console.log('Importando Razas...');
+      const rdata = JSON.parse(fs.readFileSync(razasFile, 'utf8'));
+      for (const especie of Object.keys(rdata)) {
+        for (const nombre of rdata[especie]) {
+          await client.query('INSERT INTO razas(especie, nombre) VALUES ($1, $2)', [especie, nombre]);
+        }
+      }
+      console.log('- Razas importadas correctamente.');
+    } else {
+      console.warn(`Archivo no encontrado: ${razasFile}`);
+    }
+
+    // --- DIVISIONES DE MÉXICO ---
+    if (fs.existsSync(mxFile)) {
+      console.log('Importando Divisiones de México...');
+      const mx = JSON.parse(fs.readFileSync(mxFile, 'utf8'));
       let count = 0;
-      for(const estado of Object.keys(mx)){
+      for (const estado of Object.keys(mx)) {
         const municipios = mx[estado] || {};
-        for(const municipio of Object.keys(municipios)){
+        for (const municipio of Object.keys(municipios)) {
           const colonias = municipios[municipio] || [];
-          for(const colonia of colonias){
-            await client.query('INSERT INTO mx_divisiones(estado, municipio, colonia, codigo_postal, meta) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING', [estado, municipio, colonia, null, JSON.stringify({source: 'mx_divisions'})]);
+          for (const colonia of colonias) { // colonia es un objeto {name, cp}
+            await client.query(
+              'INSERT INTO mx_divisiones(estado, municipio, colonia, codigo_postal) VALUES ($1, $2, $3, $4)',
+              [estado, municipio, colonia.name, colonia.cp]
+            );
             count++;
           }
         }
       }
-      console.log('MX divisiones importadas (aprox):', count);
-    } else console.warn('mx_divisions.json no encontrado en', mxFile);
+      console.log(`- ${count} divisiones de México importadas.`);
+    } else {
+      console.warn(`Archivo no encontrado: ${mxFile}`);
+    }
+
+    // Si todo fue bien, confirmar la transacción
+    await client.query('COMMIT');
+    console.log('\n\u00A1Seed completado exitosamente!');
 
   } catch (err) {
-    console.error('Error durante import:', err);
+    // Si algo falla, hacer rollback
+    await client.query('ROLLBACK');
+    console.error('\nError durante el proceso de seed. La transacción ha sido revertida.', err);
+    process.exit(1);
   } finally {
     await client.end();
   }
 }
 
-run();
+seedDatabase();
