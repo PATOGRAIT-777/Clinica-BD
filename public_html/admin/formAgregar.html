@@ -306,31 +306,38 @@
     });
 
     document.getElementById('register-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        // The backend expects nombre_completo, so add it here.
-        formData.append('nombre_completo', `${formData.get('nombre')} ${formData.get('apellidos')}`);
+    e.preventDefault();
+    
+    // 1. Usamos FormData para empaquetar archivos y texto juntos
+    const formData = new FormData(this);
+    
+    // Agregamos manualmente el nombre completo si tu base de datos lo pide así
+    const nombre = document.querySelector('input[name="nombre"]').value;
+    const apellidos = document.querySelector('input[name="apellidos"]').value;
+    formData.append('nombre_completo', `${nombre} ${apellidos}`);
 
-        fetch('/api/auth/register', {
-            method: 'POST',
-            body: formData // Send FormData directly
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.href = 'dashboard.html';
-            } else {
-                alert(data.message || 'Error al registrarse');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al registrarse');
-        });
+    // 2. IMPORTANTE: Al enviar FormData, NO ponemos 'Content-Type': 'application/json'
+    // El navegador pondrá automáticamente el tipo correcto (multipart/form-data)
+    fetch('/api/auth/register', {
+        method: 'POST',
+        // headers: { 'Content-Type': 'application/json' },  <-- ¡BORRA O COMENTA ESTA LÍNEA!
+        body: formData // <-- Enviamos el formData directo, SIN JSON.stringify
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            window.location.href = 'dashboard.html';
+        } else {
+            alert(data.message || 'Error al registrarse');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión con el servidor');
     });
+});
 
     // Populate Mexican states/municipios/colonias from JSON
     fetch('/api/mx_divisiones')
