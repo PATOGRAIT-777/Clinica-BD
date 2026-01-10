@@ -79,7 +79,7 @@
                 <!-- Registro -->
                 <div class="reg-card">
                   <h2>Regístrate</h2>
-                  <form method="post" action="desplegar.jsp" class="form-size" enctype="multipart/form-data">
+                  <form method="post" action="#register" class="form-size" enctype="multipart/form-data">
                     <input type="hidden" name="role" value="cliente">
 
                     <label>
@@ -172,12 +172,12 @@
 
                     <label>
                       Comprobante de domicilio (archivo)
-                      <input type="file" name="proof_address" accept="image/*,application/pdf" required>
+                      <input type="file" name="proof_address" accept="image/*,application/pdf" >
                     </label>
 
                     <label>
                       Identificación oficial (archivo)
-                      <input type="file" name="proof_id" accept="image/*,application/pdf" required>
+                      <input type="file" name="proof_id" accept="image/*,application/pdf" >
                     </label>
 
                     <div style="display:grid;grid-template-columns:1fr;gap:8px">
@@ -253,7 +253,7 @@
                 <!-- Inicio de sesión -->
                 <div class="reg-card">
                   <h2>Inicia Sesión</h2>
-                  <form method="post" action="valUsr.jsp">
+                  <form method="post" action="#login">
                     <input type="text" name="usr" placeholder="Correo" required>
                     <input type="password" name="pass" placeholder="Contraseña" required>
                     <button type="submit" class="reg-btn-submit">Ingresar</button>
@@ -274,35 +274,38 @@
     </div>
   </footer>
 
-  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
   <script>
-    // Populate Mexican states/municipios/colonias from JSON
+    // Configuración del año en el footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // --- CARGA DE ESTADOS/MUNICIPIOS (Tu código original) ---
     fetch('mx_divisions.json')
       .then(r=>r.json())
       .then(data=>{
-        // keep in-memory reference for validation and use
         try{ window.mx_divisions = data; }catch(e){}
-        // also cache for offline/fallback
         try{ localStorage.setItem('mx_divisions_cache', JSON.stringify(data)); }catch(e){}
 
         const stateSelect = document.getElementById('mx_state');
         const municipioSelect = document.getElementById('mx_municipio');
         const coloniaSelect = document.getElementById('mx_colonia');
+        
         Object.keys(data).sort((a,b)=>a.localeCompare(b,'es')).forEach(state=>{
           const opt = document.createElement('option'); opt.value = state; opt.textContent = state; stateSelect.appendChild(opt);
         });
+
         stateSelect.addEventListener('change', ()=>{
           municipioSelect.innerHTML = '<option value="">-- Selecciona municipio --</option>';
           coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
           const muns = data[stateSelect.value] || {};
           Object.keys(muns).sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; municipioSelect.appendChild(o); });
         });
+
         municipioSelect.addEventListener('change', ()=>{
           coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
           const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
           cols.sort((x,y)=> (x.name||'').localeCompare(y.name||'','es')).forEach(c=>{ const o=document.createElement('option'); o.value=c.name; o.textContent=c.name; coloniaSelect.appendChild(o); });
         });
-        // when colonia changes, autofill CP if available
+
         coloniaSelect.addEventListener('change', ()=>{
           try{
             const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
@@ -312,65 +315,103 @@
           }catch(e){}
         });
       })
-      .catch(err=>{
-        console.error('Error cargando mx_divisions.json',err);
-        // attempt to load cache
-        try{
-          const cached = JSON.parse(localStorage.getItem('mx_divisions_cache')||'{}');
-          if(Object.keys(cached).length>0){ window.mx_divisions = cached; const stateSelect=document.getElementById('mx_state'); Object.keys(cached).forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; stateSelect.appendChild(opt); }); }
-        }catch(e){ }
-      });
+      .catch(err=>{ console.error('Error cargando mx_divisions.json',err); });
 
-    // Validation helpers
+    // Reglas de validación
     const curpRegex = /^[A-ZÑ]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i;
     const rfcRegex = /^([A-ZÑ&]{3,4})\d{6}([A-Z0-9]{3})?$/i;
 
-        document.querySelector('form[action="desplegar.jsp"]').addEventListener('submit', function(e){
+    // ==========================================
+    // 1. LÓGICA DE REGISTRO
+    // ==========================================
+    document.querySelector('form[action="#register"]').addEventListener('submit', async function(e){
+      e.preventDefault(); 
+
+      // Validaciones del lado del cliente
       const curp = this.querySelector('input[name="curp"]').value.trim();
       const rfc = this.querySelector('input[name="rfc"]').value.trim();
       const email = this.querySelector('input[name="email"]').value.trim();
       const idType = this.querySelector('select[name="id_type"]').value;
       const idNumber = this.querySelector('input[name="id_number"]').value.trim();
-      if(!curpRegex.test(curp)){
-        e.preventDefault(); alert('CURP no válido. Verifica el formato.'); return false;
-      }
-      if(rfc && !rfcRegex.test(rfc)){
-        e.preventDefault(); alert('RFC no válido.'); return false;
-      }
-      if(!/.+@.+\..+/.test(email)){
-        e.preventDefault(); alert('Correo electrónico no válido.'); return false;
-      }
-      // Validate CP matches selected colonia
-      const selectedCol = document.getElementById('mx_colonia').value;
-      const cpInput = this.querySelector('input[name="cp"]').value.trim();
-      if(selectedCol){
-        try{
-          const divisions = window.mx_divisions || JSON.parse(localStorage.getItem('mx_divisions_cache') || '{}');
-          let mismatch = false;
-          for(const s of Object.keys(divisions||{})){
-            const muns = divisions[s];
-            for(const mun of Object.keys(muns||{})){
-              const cols = muns[mun] || [];
-              for(const c of cols){ if(c.name===selectedCol && c.cp && c.cp!==cpInput){ mismatch = true; break; } }
-              if(mismatch) break;
-            }
-            if(mismatch) break;
-          }
-          if(mismatch){ e.preventDefault(); alert('El Código Postal no coincide con la colonia seleccionada.'); return false; }
-        }catch(_){ }
-      }
-      // Simple ID rules
-      if(idType === 'INE' && idNumber.length < 15){ e.preventDefault(); alert('INE debe tener al menos 15 caracteres.'); return false; }
-      if(idType === 'Pasaporte' && idNumber.length < 6){ e.preventDefault(); alert('Pasaporte invalido.'); return false; }
-      // Nueva validación: contraseña y aceptación de términos
+      
+      if(!curpRegex.test(curp)){ alert('CURP no válido.'); return false; }
+      if(rfc && !rfcRegex.test(rfc)){ alert('RFC no válido.'); return false; }
+      if(!/.+@.+\..+/.test(email)){ alert('Correo no válido.'); return false; }
+      
+      // Validar Contraseñas
       const pwd = this.querySelector('input[name="password"]').value || '';
       const pwd2 = this.querySelector('input[name="password_confirm"]').value || '';
       const accept = this.querySelector('input[name="accept_terms"]');
-      if(pwd.length < 8){ e.preventDefault(); alert('La contraseña debe tener al menos 8 caracteres.'); return false; }
-      if(pwd !== pwd2){ e.preventDefault(); alert('Las contraseñas no coinciden.'); return false; }
-      if(accept && !accept.checked){ e.preventDefault(); alert('Debes aceptar los términos y condiciones.'); return false; }
-      return true;
+      
+      if(pwd.length < 8){ alert('La contraseña debe tener al menos 8 caracteres.'); return false; }
+      if(pwd !== pwd2){ alert('Las contraseñas no coinciden.'); return false; }
+      if(accept && !accept.checked){ alert('Debes aceptar los términos.'); return false; }
+      
+      // ENVÍO AL SERVIDOR
+      const formData = new FormData(this); // Aquí sí existe formData
+
+      try {
+        const response = await fetch('http://127.0.0.1:3000/api/auth/register', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert('¡Registro exitoso! ' + (result.message || 'Bienvenido'));
+          e.target.reset(); // Limpia el formulario
+        } else {
+          alert('Error: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión: ' + error.message);
+      }
     });
-  </script>
+
+    // ==========================================
+    // 2. LÓGICA DE LOGIN (Separada correctamente)
+    // ==========================================
+    document.querySelector('form[action="#login"]').addEventListener('submit', async function(e){
+      e.preventDefault(); 
+
+      const emailInput = this.querySelector('input[name="usr"]');
+      const passwordInput = this.querySelector('input[name="pass"]');
+
+      if (!emailInput.value || !passwordInput.value) {
+          alert('Ingresa correo y contraseña.');
+          return;
+      }
+
+      const loginData = {
+          email: emailInput.value,
+          password: passwordInput.value
+      };
+
+      try {
+        const response = await fetch('http://127.0.0.1:3000/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, // Login usa JSON, no FormData
+            body: JSON.stringify(loginData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert('¡Bienvenido! ' + (result.user ? result.user.nombre : ''));
+            // Guardar token
+            localStorage.setItem('token', result.token);
+            // Redirigir (ejemplo)
+            // window.location.href = 'dashboard.html';
+        } else {
+            alert('Error al entrar: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error login:', error);
+        alert('No se pudo conectar con el servidor.');
+      }
+    });
+</script>
 </body>
 </html>

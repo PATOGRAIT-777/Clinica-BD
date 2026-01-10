@@ -1,2 +1,9 @@
 {
+    "liveServer.settings.ignoreFiles": [
+        "**/backend/**",
+        "**/uploads/**",
+        "**/*.jpg",
+        "**/*.png",
+        "**/*.pdf"
+    ]
 }
