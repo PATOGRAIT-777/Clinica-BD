@@ -96,15 +96,60 @@
     </div>
   </footer>
 
+  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+    <div class="login-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+      <form id="login-form" class="login-form">
+        <h2>Ingresar</h2>
+        <input type="email" id="login-email" placeholder="Usuario" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
   <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
 
   <script>
+    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
+    function closeOnOutsideClick(event) {
+      const modal = document.getElementById('login-modal');
+      if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin();
+    }
+    
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error al iniciar sesión');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al iniciar sesión');
+        });
+    });
+
     // cart count
     function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
     function updateCartCount(){ document.getElementById('cart-count').textContent = getCart().reduce((s,i)=>s+i.qty,0); }
     updateCartCount();
-
-    function openLogin(){ document.getElementById('login-modal')?.style.display='flex'; }
 
     document.getElementById('btn-view').addEventListener('click', ()=>{
       const ruac = document.getElementById('ruac-input').value.trim(); if(!ruac) return alert('Ingresa RUAC');
@@ -115,43 +160,67 @@
     (function(){ const p = new URLSearchParams(window.location.search); if(p.get('ruac')){ document.getElementById('ruac-input').value = p.get('ruac'); document.getElementById('btn-view').click(); } })();
 
     function showPet(ruac){
-      const pets = JSON.parse(localStorage.getItem('pets')||'{}'); const visits = JSON.parse(localStorage.getItem('visits')||'[]');
-      const p = pets[ruac]; if(!p) return alert('Ficha no encontrada');
-      document.getElementById('pet-card').style.display='block';
-      document.getElementById('pet-photo').src = p.photo || '../img/extras/doge.jpg';
-      document.getElementById('pet-name').textContent = p.name || 'Sin nombre';
-      document.getElementById('pet-meta').textContent = (p.specie||'') + ' · ' + (p.age||'') + ' · ' + (p.gender||'');
-      document.getElementById('pet-origin').textContent = p.origin||''; document.getElementById('pet-idform').textContent = p.idForm||'';
-      document.getElementById('pet-size').textContent = p.size||''; document.getElementById('pet-weight').textContent = p.weight||'';
-      document.getElementById('pet-vax').textContent = p.cartilla||'No'; document.getElementById('pet-last-rabia').textContent = p.lastRabia||'N/D';
-      document.getElementById('pet-deworm').textContent = p.dewormed||'No'; document.getElementById('pet-last-dew').textContent = p.lastDeworm||'N/D';
-      document.getElementById('pet-behavior').textContent = p.behavior||''; document.getElementById('pet-disabled').textContent = p.disabled||'No';
-      document.getElementById('pet-home').textContent = p.homeLocation||'';
+      const token = localStorage.getItem('token');
+      fetch(`/api/mascotas?ruac=${ruac}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(r => r.json())
+      .then(pets => {
+        const p = pets[0]; if(!p) return alert('Ficha no encontrada');
+        document.getElementById('pet-card').style.display='block';
+        document.getElementById('pet-photo').src = p.imagen_url || '../img/extras/doge.jpg';
+        document.getElementById('pet-name').textContent = p.nombre || 'Sin nombre';
+        document.getElementById('pet-meta').textContent = (p.tipo||'') + ' · ' + (p.fecha_nacimiento||'') + ' · ' + (p.sexo||'');
+        document.getElementById('pet-origin').textContent = p.procedencia||''; 
+        // document.getElementById('pet-idform').textContent = p.idForm||''; // No idForm in DB schema
+        document.getElementById('pet-size').textContent = p.tamano||''; 
+        document.getElementById('pet-weight').textContent = p.peso||'';
+        // document.getElementById('pet-vax').textContent = p.cartilla||'No'; // No cartilla in DB schema
+        // document.getElementById('pet-last-rabia').textContent = p.lastRabia||'N/D'; // No lastRabia in DB schema
+        document.getElementById('pet-deworm').textContent = p.desparasitada ? 'Sí' : 'No'; 
+        // document.getElementById('pet-last-dew').textContent = p.lastDeworm||'N/D'; // No lastDeworm in DB schema
+        document.getElementById('pet-behavior').textContent = p.comportamiento||''; 
+        document.getElementById('pet-disabled').textContent = p.discapacitada ? 'Sí' : 'No';
+        document.getElementById('pet-home').textContent = p.ubicacion_hogar||'';
 
-      // visits
-      const list = visits.filter(v=>v.ruac===ruac).sort((a,b)=>b.date.localeCompare(a.date));
-      const el = document.getElementById('visits-list'); el.innerHTML='';
-      if(!list.length) el.innerHTML = '<p class="muted">Sin visitas registradas.</p>';
-      list.forEach(v=>{
-        const docs = JSON.parse(localStorage.getItem('doctors')||'[]'); const doc = docs.find(d=>d.id===v.doctorId) || {};
-        const d = document.createElement('div'); d.className='visit';
-        d.innerHTML = `<div><strong>${new Date(v.date).toLocaleString()}</strong> — ${doc.name||'Médico'}</div>
-          <div><strong>Procedimiento:</strong> ${escapeHtml(v.procedure)}</div>
-          <div><strong>Diagnóstico:</strong> ${escapeHtml(v.diag)}</div>
-          <div class="muted">${escapeHtml(v.padecimiento)}</div>`;
-        el.appendChild(d);
+        // visits
+        fetch(`/api/visitas?mascota_id=${p.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+          .then(r => r.json())
+          .then(visits => {
+            const list = visits.sort((a,b)=>b.visit_at.localeCompare(a.visit_at));
+            const el = document.getElementById('visits-list'); el.innerHTML='';
+            if(!list.length) el.innerHTML = '<p class="muted">Sin visitas registradas.</p>';
+            list.forEach(v=>{
+              const d = document.createElement('div'); d.className='visit';
+              d.innerHTML = `<div><strong>${new Date(v.visit_at).toLocaleString()}</strong> — ${v.doctor_nombre||'Médico'}</div>
+                <div><strong>Diagnóstico:</strong> ${escapeHtml(v.diagnosis)}</div>
+                <div><strong>Tratamientos:</strong> ${escapeHtml(v.treatments)}</div>
+                <div class="muted">${escapeHtml(v.notes)}</div>`;
+              el.appendChild(d);
+            });
+          });
+
+        // set schedule link with ruac
+        document.getElementById('btn-schedule').href = 'citas.html?ruac='+encodeURIComponent(ruac);
       });
-
-      // set schedule link with ruac
-      document.getElementById('btn-schedule').href = 'citas.html?ruac='+encodeURIComponent(ruac);
     }
 
     function escapeHtml(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
     // if user has saved pets (session), show first
     (function(){
-      const userPets = JSON.parse(localStorage.getItem('user_pets')||'[]');
-      if(userPets.length){ document.getElementById('ruac-input').value = userPets[0]; document.getElementById('btn-view').click(); }
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (token && user) {
+        fetch(`/api/mascotas?propietario_id=${user.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+          .then(r => r.json())
+          .then(pets => {
+            if (pets.length > 0) {
+              document.getElementById('ruac-input').value = pets[0].ruac;
+              showPet(pets[0].ruac);
+            }
+          });
+      }
     })();
   </script>
 </body>

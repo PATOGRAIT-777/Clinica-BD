@@ -35,32 +35,14 @@
       <p class="muted">Lista de mascotas registradas y acceso a su historial clínico.</p>
 
       <div style="margin-top:16px">
-        <button class="btn-primary" onclick="location.href='regPet.html'">Registrar nueva mascota</button>
+        <button id="register-pet-btn" class="btn-primary" onclick="location.href='regPetAdmin.html'">Registrar nueva mascota</button>
       </div>
 
       <table style="margin-top:12px; width:100%; border-collapse:collapse">
         <thead>
-          <tr><th>Nombre</th><th>Raza</th><th>Edad</th><th>Dueño</th><th>Fecha cita</th><th>Hora cita</th><th>Historial médico</th></tr>
+          <tr><th>Nombre</th><th>Raza</th><th>Edad</th><th>Dueño</th><th>Historial médico</th></tr>
         </thead>
-        <tbody>
-          <tr>
-            <td>Firulais</td>
-            <td>Labrador</td>
-            <td>3 años</td>
-            <td>María G.</td>
-            <td>2026-01-10</td>
-            <td>09:30</td>
-            <td><button class="btn-ghost" onclick="openPatientModal('Firulais','María G.','3 años')">Ver</button></td>
-          </tr>
-          <tr>
-            <td>Misu</td>
-            <td>Persa</td>
-            <td>5 años</td>
-            <td>Carlos R.</td>
-            <td>2026-01-12</td>
-            <td>10:00</td>
-            <td><button class="btn-ghost" onclick="openPatientModal('Misu','Carlos R.','5 años')">Ver</button></td>
-          </tr>
+        <tbody id="pacientes-tbody">
         </tbody>
       </table>
 
@@ -74,19 +56,6 @@
     </div>
   </footer>
 
-  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-    <div class="login-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <form class="login-form">
-        <h2>Ingresar</h2>
-        <input type="text" placeholder="Usuario" required>
-        <input type="password" placeholder="Contraseña" required>
-        <button class="btn-primary">Entrar</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Patient detail modal -->
   <div id="patient-modal" class="login-modal" onclick="closeOnOutsideClickPatient(event)" style="display:none">
     <div class="login-content">
       <span class="close" onclick="document.getElementById('patient-modal').style.display='none'">&times;</span>
@@ -99,55 +68,69 @@
   </div>
 
   <script>
-    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    function closeOnOutsideClick(event) { const modal = document.getElementById('login-modal'); if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin(); }
-    document.getElementById('year').textContent = new Date().getFullYear();
+    (function() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
 
-    function openPatientModal(nombre, dueño, edad) {
-      const modal = document.getElementById('patient-modal');
-      const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-      // try to find pet record by name and owner
-      const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-      const pet = pets.find(p=> (p.name===nombre && (p.owner===dueño || p.ownerName===dueño)) ) || pets.find(p=>p.name===nombre) || null;
-      const visits = appointments.filter(a=> a.owner===dueño || a.pet===nombre || a.petId=== (pet && pet.id) ).length;
-      const history = appointments.filter(a=> a.owner===dueño || a.pet===nombre || a.petId=== (pet && pet.id)).sort((a,b)=> (a.date||a.day||'').localeCompare(b.date||b.day||''));
-      let sucursal='N/D', doctor='N/D', padecimientos='N/D';
-      const last = history.slice(-1)[0] || null;
-      if(last){ sucursal = last.branch || last.branchName || 'N/D'; doctor = last.doctor || 'N/D'; padecimientos = last.procedure || last.padecimiento || 'N/D'; }
+        if (!token || !user) {
+            window.location.href = 'formAgregar.html';
+            return;
+        }
 
-      // build detailed patient info including full pet registration when available
-      let infoHtml = `
-        <p><strong>Nombre:</strong> ${nombre}</p>
-        <p><strong>Dueño:</strong> ${dueño}</p>
-        <p><strong>Edad:</strong> ${edad}</p>
-        <p><strong>Sucursal registrada:</strong> ${sucursal}</p>
-        <p><strong>Doctor última cita:</strong> ${doctor}</p>
-        <p><strong>Padecimientos / Procedimiento:</strong> ${padecimientos}</p>
-        <p><strong>Veces asistió a cita:</strong> ${visits}</p>
-      `;
-      if(pet){
-        infoHtml += '<hr><h3>Ficha completa de la mascota</h3>';
-        const keys = ['ruac','name','species','age','gender','sterilized','microchipped','microchipNumber','size','primaryColor','secondaryColor','coverage','weight','provenance','outdoorSupervision','behavior','vaccinationCard','lastRabies','disabled','disabilityType','dewormed','lastDeworm','homeLocation','idMethod'];
-        keys.forEach(k=>{ if(pet[k]!==undefined){ infoHtml += `<p><strong>${k}:</strong> ${pet[k]}</p>`; }});
-      }
+        const isAdmin = user.rol === 'admin';
+        const isRecepcionista = user.rol === 'recepcionista';
+        const isMedico = user.rol === 'medico';
 
-      if(history.length>0){
-        infoHtml += '<hr><h3>Historial de citas</h3><ul>';
-        history.forEach(h=>{ infoHtml += `<li>${h.date||h.day||'N/D'} ${h.time||h.hour||''} — ${h.branch||h.branchName||'N/D'} / ${h.doctor||'N/D'} — ${h.procedure||h.padecimiento||h.reason||'N/D'}</li>`; });
-        infoHtml += '</ul>';
-      }
+        if (!isAdmin && !isRecepcionista && !isMedico) {
+            window.location.href = 'formAgregar.html';
+            return;
+        }
 
-      document.getElementById('patient-info').innerHTML = infoHtml;
-      modal.style.display = 'flex';
-    }
+        if (!isAdmin) {
+            document.getElementById('register-pet-btn').style.display = 'none';
+        }
 
-    function closeOnOutsideClickPatient(event) {
-      const modal = document.getElementById('patient-modal');
-      if (!modal) return;
-      const box = modal.querySelector('.login-content');
-      if (box && !box.contains(event.target)) modal.style.display = 'none';
-    }
+        fetch('/api/mascotas', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.json()).then(mascotas => {
+            const tbody = document.getElementById('pacientes-tbody');
+            tbody.innerHTML = '';
+            mascotas.forEach(mascota => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${mascota.nombre}</td>
+                    <td>${mascota.raza}</td>
+                    <td>${mascota.fecha_nacimiento}</td>
+                    <td>${mascota.propietario_nombre}</td>
+                    <td><button class="btn-ghost" onclick="openPatientModal('${mascota.id}')">Ver</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+
+        window.openPatientModal = function(petId) {
+            const modal = document.getElementById('patient-modal');
+            
+            fetch(`/api/mascotas/${petId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json()).then(pet => {
+                let infoHtml = `
+                    <p><strong>Nombre:</strong> ${pet.nombre}</p>
+                    <p><strong>Dueño:</strong> ${pet.propietario_nombre}</p>
+                    <p><strong>Edad:</strong> ${pet.fecha_nacimiento}</p>
+                `;
+                document.getElementById('patient-info').innerHTML = infoHtml;
+                modal.style.display = 'flex';
+            });
+        }
+
+        window.closeOnOutsideClickPatient = function(event) {
+            const modal = document.getElementById('patient-modal');
+            if (!modal) return;
+            const box = modal.querySelector('.login-content');
+            if (box && !box.contains(event.target)) modal.style.display = 'none';
+        }
+    })();
   </script>
 </body>
 </html>

@@ -39,11 +39,18 @@
           <a href="regUser.html">Mi cuenta</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-ghost"><a href="formAgregar.html">Registrarse</a></button>
-        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+        <button class="btn-ghost" onclick="logout()">Salir</button>
       </div>
     </div>
   </header>
+
+  <script>
+      function logout() {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = 'formAgregar.html';
+      }
+  </script>
 
   <div class="container layout" style="display:flex;gap:20px;align-items:flex-start">
     <aside class="sidebar" style="min-width:220px;max-width:260px">
@@ -63,32 +70,31 @@
       <div class="admin-cards">
         <div class="card-metric">
           <h3>Citas hoy</h3>
-          <p style="font-size:24px">12</p>
+          <p style="font-size:24px" id="citas-hoy">0</p>
         </div>
         <div class="card-metric">
           <h3>Pacientes</h3>
-          <p style="font-size:24px">248</p>
+          <p style="font-size:24px" id="pacientes">0</p>
         </div>
-        <div class="card-metric">
+        <div class="card-metric" id="pedidos-card">
           <h3>Pedidos pendientes</h3>
-          <p style="font-size:24px">5</p>
+          <p style="font-size:24px" id="pedidos-pendientes">0</p>
         </div>
-        <div class="card-metric">
+        <div class="card-metric" id="stock-card">
           <h3>Productos en stock</h3>
-          <p style="font-size:24px">134</p>
+          <p style="font-size:24px" id="productos-stock">0</p>
         </div>
       </div>
 
       <section style="margin-top:24px">
         <h2>Próximas citas</h2>
         <table>
-          <thead><tr><th>Hora</th><th>Paciente</th><th>Dueño</th><th>Servicio</th><th>Sucursal</th><th>Doctor</th><th>Padecimiento</th><th>Estado</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Paciente</th><th>Dueño</th><th>Servicio</th><th>Sucursal</th><th>Doctor</th><th>Estado</th></tr></thead>
           <tbody id="dashboard-appointments-body">
-            <tr><td>09:30</td><td>Firulais</td><td>María G.</td><td>Consulta</td><td>Lindavista</td><td>Dr. Pérez</td><td>Otitis</td><td>Confirmada</td></tr>
-            <tr><td>10:00</td><td>Misu</td><td>Carlos R.</td><td>Vacunación</td><td>Centro</td><td>Dra. López</td><td>Vacunación</td><td>Pendiente</td></tr>
           </tbody>
         </table>
       </section>
+
     </main>
   </div>
 
@@ -99,26 +105,103 @@
     </div>
   </footer>
 
-  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-    <div class="login-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <form class="login-form">
-        <h2>Ingresar</h2>
-        <input type="text" placeholder="Usuario" required>
-        <input type="password" placeholder="Contraseña" required>
-        <button class="btn-primary">Entrar</button>
-      </form>
-    </div>
-  </div>
-
   <script>
-    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    function closeOnOutsideClick(event) {
-      const modal = document.getElementById('login-modal');
-      if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin();
-    }
-    document.getElementById('year').textContent = new Date().getFullYear();
+    (function() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+
+        if (!token || !user) {
+            window.location.href = 'formAgregar.html';
+            return;
+        }
+
+        const isAdmin = user.rol === 'admin';
+        const isRecepcionista = user.rol === 'recepcionista';
+        const isMedico = user.rol === 'medico';
+
+        if (!isAdmin && !isRecepcionista && !isMedico) {
+            window.location.href = 'formAgregar.html';
+            return;
+        }
+
+        if (isMedico) {
+            document.getElementById('pedidos-card').style.display = 'none';
+            document.getElementById('stock-card').style.display = 'none';
+        }
+
+        const today = new Date().toISOString().slice(0, 10);
+        fetch(`/api/citas?fecha=${today}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('citas-hoy').textContent = data.length;
+        })
+        .catch(error => console.error('Error:', error));
+
+        fetch('/api/mascotas', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('pacientes').textContent = data.length;
+        })
+        .catch(error => console.error('Error:', error));
+
+        if (isAdmin || isRecepcionista) {
+            fetch('/api/ordenes?estado=pendiente', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('pedidos-pendientes').textContent = data.length;
+            })
+            .catch(error => console.error('Error:', error));
+
+            fetch('/api/productos', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const stock = data.reduce((acc, product) => acc + product.stock, 0);
+                document.getElementById('productos-stock').textContent = stock;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        fetch('/api/citas', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('dashboard-appointments-body');
+            tbody.innerHTML = '';
+            data.forEach(cita => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${cita.hora_inicio}</td>
+                    <td>${cita.mascota_nombre}</td>
+                    <td>${cita.propietario_nombre}</td>
+                    <td>${cita.procedimiento}</td>
+                    <td>${cita.sucursal_nombre}</td>
+                    <td>${cita.medico_nombre}</td>
+                    <td>${cita.estado}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    })();
   </script>
 </body>
 </html>

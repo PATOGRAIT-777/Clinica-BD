@@ -3,42 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Horario — AnimeAV1</title>
+  <title>Horario — TechSide Vet</title>
   <link rel="stylesheet" href="../css/universalCss.css" type="text/css">
 </head>
-
-    <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-      <div class="login-content">
-        <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-        <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
-        <form class="login-form">
-          <h2>Iniciar Sesión</h2>
-          <input type="text" placeholder="Usuario">
-          <input type="password" placeholder="Contraseña">
-          <button type="submit">Entrar</button>
-        </form>
-      </div>
-    </div>
-
-    <script> 
-        function openLogin() {
-          document.getElementById('login-modal').style.display = 'flex';
-        }
-
-        function closeLogin() {
-          document.getElementById('login-modal').style.display = 'none';
-        }
-
-        // Cierra si se hace clic fuera del cuadro de login
-        function closeOnOutsideClick(event) {
-          const modal = document.getElementById('login-modal');
-          const box = modal.querySelector('.login-box');
-
-          if (!box.contains(event.target)) {
-            closeLogin();
-          }
-        }
-    </script>
 
 <body>
   <header class="site-header">
@@ -52,11 +19,18 @@
         <a href="regUser.html">Mi cuenta</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-ghost">Registrarse</button>
-        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+        <button class="btn-ghost" onclick="logout()">Salir</button>
       </div>
     </div>
   </header>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'formAgregar.html';
+        }
+    </script>
 
   <section class="hero">
     <div class="container">
@@ -89,76 +63,97 @@
 
   <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
   <script>
-    // Enhanced 2-week schedule with branches and doctors; appointments stored in localStorage
     (function(){
-      const container = document.getElementById('calendar-2weeks');
-      const branchSelect = document.getElementById('branch-select');
-      const doctorSelect = document.getElementById('doctor-select');
-      const dateFocus = document.getElementById('date-focus');
-      let branches = [];
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
 
-      function loadBranches(){
-        fetch('branches.json').then(r=>r.json()).then(j=>{
-          branches = j.branches || [];
-          branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
-          branchSelect.dispatchEvent(new Event('change'));
-        }).catch(err=>{
-          console.error('No pude cargar branches.json', err);
-        });
-      }
-
-      function populateDoctors(){
-        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
-        doctorSelect.innerHTML = (b.doctors||[]).map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
-        renderCalendar();
-      }
-
-      function renderCalendar(){
-        container.innerHTML = '';
-        const start = document.getElementById('date-focus').value ? new Date(document.getElementById('date-focus').value) : new Date();
-        const endInput = document.getElementById('date-end').value;
-        const end = endInput ? new Date(endInput) : new Date(start.getFullYear(), start.getMonth(), start.getDate()+13);
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        // ensure start <= end
-        if(end < start){ container.innerHTML = '<p class="muted">Rango inválido: la fecha fin es anterior a la fecha inicio.</p>'; return; }
-        for(let d = 0, cur = new Date(start.getFullYear(), start.getMonth(), start.getDate()); cur <= end; d++, cur = new Date(start.getFullYear(), start.getMonth(), start.getDate()+d)){
-          const date = new Date(cur);
-          const iso = date.toISOString().slice(0,10);
-          const card = document.createElement('div'); card.className='card';
-          const title = document.createElement('h3'); title.textContent = date.toLocaleDateString(); title.style.color = 'var(--accent,#16a34a)'; card.appendChild(title);
-          const list = document.createElement('div');
-          // show hourly slots from 08:00 to 18:00
-          for(let h=8; h<=18; h++){
-            const hh = (h<10? '0'+h : ''+h)+':00';
-            const slot = document.createElement('div'); slot.style.marginBottom='6px';
-            const btn = document.createElement('button');
-            btn.textContent = hh;
-            const exists = appointments.find(a=>a.date===iso && a.time===hh && a.branch===branchSelect.value && a.doctor===doctorSelect.value);
-            if(exists){ btn.disabled = true; btn.textContent = hh + ' — Ocupado'; btn.className='btn-ghost'; }
-            else { btn.className='btn-available'; btn.style.background='#16a34a'; btn.style.color='#fff'; }
-            btn.addEventListener('click', ()=>bookSlot(iso, hh));
-            slot.appendChild(btn); list.appendChild(slot);
-          }
-          card.appendChild(list); container.appendChild(card);
+        if (!token || !user) {
+            window.location.href = 'formAgregar.html';
+            return;
         }
-        container.style.gridAutoRows = 'minmax(120px,auto)';
-      }
 
-      function bookSlot(date, time){
-        const name = prompt('Nombre del dueño para la cita (ej. María Pérez):');
-        if(!name) return;
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        appointments.push({id:Date.now(), owner:name, branch:branchSelect.value, doctor:doctorSelect.value, date, time});
-        localStorage.setItem('appointments', JSON.stringify(appointments));
-        alert('Cita registrada: '+date+' '+time);
-        renderCalendar();
-      }
+        const isAdmin = user.rol === 'admin';
+        const isRecepcionista = user.rol === 'recepcionista';
+        const isMedico = user.rol === 'medico';
 
-      branchSelect.addEventListener('change', populateDoctors);
-      doctorSelect.addEventListener('change', renderCalendar);
-      dateFocus.addEventListener('change', ()=>{ /* optional: focus day */ });
+        if (!isAdmin && !isRecepcionista && !isMedico) {
+            window.location.href = 'formAgregar.html';
+            return;
+        }
 
-      loadBranches();
+        const container = document.getElementById('calendar-2weeks');
+        const branchSelect = document.getElementById('branch-select');
+        const doctorSelect = document.getElementById('doctor-select');
+        const dateFocus = document.getElementById('date-focus');
+        let branches = [];
+        let doctors = [];
+
+        function loadBranches(){
+            fetch('/api/sucursales', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(r=>r.json()).then(j=>{
+            branches = j || [];
+            branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
+            branchSelect.dispatchEvent(new Event('change'));
+            }).catch(err=>{
+            console.error('No pude cargar branches.json', err);
+            });
+        }
+
+        function populateDoctors(){
+            fetch('/api/doctores', { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(r => r.json()).then(docs => {
+                doctors = docs || [];
+                if (isMedico) {
+                    const medico = doctors.find(d => d.usuario_id === user.id);
+                    if (medico) {
+                        doctorSelect.innerHTML = `<option value="${medico.id}">${medico.nombre}</option>`;
+                        doctorSelect.disabled = true;
+                    }
+                } else {
+                    doctorSelect.innerHTML = doctors.map(d=>`<option value="${d.id}">${d.nombre} — ${d.especialidad}</option>`).join('');
+                }
+                renderCalendar();
+            });
+        }
+
+        function renderCalendar(){
+            container.innerHTML = '';
+            const start = document.getElementById('date-focus').value ? new Date(document.getElementById('date-focus').value) : new Date();
+            const endInput = document.getElementById('date-end').value;
+            const end = endInput ? new Date(endInput) : new Date(start.getFullYear(), start.getMonth(), start.getDate()+13);
+            
+            if(end < start){ container.innerHTML = '<p class="muted">Rango inválido: la fecha fin es anterior a la fecha inicio.</p>'; return; }
+
+            fetch(`/api/citas?fecha_inicio=${start.toISOString().slice(0,10)}&fecha_fin=${end.toISOString().slice(0,10)}&sucursal_id=${branchSelect.value}&medico_id=${doctorSelect.value}`, { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(r => r.json()).then(appointments => {
+                for(let d = 0, cur = new Date(start.getFullYear(), start.getMonth(), start.getDate()); cur <= end; d++, cur = new Date(start.getFullYear(), start.getMonth(), start.getDate()+d)){
+                    const date = new Date(cur);
+                    const iso = date.toISOString().slice(0,10);
+                    const card = document.createElement('div'); card.className='card';
+                    const title = document.createElement('h3'); title.textContent = date.toLocaleDateString(); title.style.color = 'var(--accent,#16a34a)'; card.appendChild(title);
+                    const list = document.createElement('div');
+                    for(let h=8; h<=18; h++){
+                        const hh = (h<10? '0'+h : ''+h)+':00';
+                        const slot = document.createElement('div'); slot.style.marginBottom='6px';
+                        const btn = document.createElement('button');
+                        btn.textContent = hh;
+                        const exists = appointments.find(a=>a.fecha===iso && a.hora_inicio===hh);
+                        if(exists){ btn.disabled = true; btn.textContent = hh + ' — Ocupado'; btn.className='btn-ghost'; }
+                        else { btn.className='btn-available'; btn.style.background='#16a34a'; btn.style.color='#fff'; }
+                        slot.appendChild(btn); list.appendChild(slot);
+                    }
+                    card.appendChild(list); container.appendChild(card);
+                }
+                container.style.gridAutoRows = 'minmax(120px,auto)';
+            });
+        }
+
+        branchSelect.addEventListener('change', populateDoctors);
+        doctorSelect.addEventListener('change', renderCalendar);
+        dateFocus.addEventListener('change', renderCalendar);
+        document.getElementById('date-end').addEventListener('change', renderCalendar);
+
+        loadBranches();
     })();
   </script>
 </body>

@@ -17,7 +17,6 @@
         <a href="regUser.html">Mi cuenta</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-ghost">Registrarse</button>
         <button class="btn-primary" onclick="openLogin()">Entrar</button>
       </div>
     </div>
@@ -53,12 +52,22 @@
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="registrar-mascota-card" style="display: none;">
           <a class="brand" href="regPet.html"><h2>Registrar Mascota</h2></a>
         <div class="grid-cards">
         </div>
       </article>
     </section>
+
+    <script>
+        (function() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user && (user.rol === 'admin' || user.rol === 'recepcionista')) {
+                document.getElementById('registrar-mascota-card').style.display = 'block';
+            }
+        })();
+    </script>
+
   </main>
 
   <footer class="site-footer">
@@ -68,7 +77,6 @@
     </div>
   </footer>
 
-  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
   <!-- Pet detail modal (read-only view for clients) -->
   <div id="pet-modal" class="login-modal" style="display:none" onclick="if(event.target===this) this.style.display='none'">
     <div class="login-content">
@@ -83,61 +91,119 @@
     </div>
   </div>
 
+  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+    <div class="login-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+      <form id="login-form" class="login-form">
+        <h2>Ingresar</h2>
+        <input type="email" id="login-email" placeholder="Usuario" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
   <script>
+    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
+    function closeOnOutsideClick(event) {
+      const modal = document.getElementById('login-modal');
+      if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin();
+    }
+    
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error al iniciar sesión');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al iniciar sesión');
+        });
+    });
+
+    function handleError(error) {
+      console.error('API Error:', error);
+      alert('Ocurrió un error. Por favor, intente de nuevo.');
+    }
+
     function openPetDetail(id){
-      const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-      const pet = pets.find(x=>x.id===id);
-      if(!pet) return;
-      document.getElementById('pet-modal-title').textContent = (pet.name||'Sin nombre') + ' — ' + (pet.species||'N/D');
-      const container = document.getElementById('pet-fields'); container.innerHTML='';
-      // display fields as read-only text
-      const fields = [
-        {k:'ruac',label:'Clave RUAC'},
-        {k:'name',label:'Nombre'},
-        {k:'species',label:'Especie'},
-        {k:'age',label:'Edad'},
-        {k:'gender',label:'Género'},
-        {k:'sterilized',label:'¿Esterilizado?'},
-        {k:'microchipped',label:'¿Tiene microchip?'},
-        {k:'microchipNumber',label:'Número de chip'},
-        {k:'size',label:'Tamaño'},
-        {k:'primaryColor',label:'Color primario'},
-        {k:'secondaryColor',label:'Color secundario'},
-        {k:'coverage',label:'Cobertura corporal'},
-        {k:'weight',label:'Peso (kg)'},
-        {k:'photo',label:'URL Foto'},
-        {k:'provenance',label:'Procedencia'},
-        {k:'outdoorSupervision',label:'Supervisión en exterior'},
-        {k:'behavior',label:'Comportamiento'},
-        {k:'vaccinationCard',label:'Cartilla de vacunación'},
-        {k:'lastRabies',label:'Última vacuna de rabia'},
-        {k:'disabled',label:'¿Discapacitada?'},
-        {k:'disabilityType',label:'Tipo de discapacidad'},
-        {k:'dewormed',label:'¿Desparasitada?'},
-        {k:'lastDeworm',label:'Última desparasitación'},
-        {k:'homeLocation',label:'Ubicación en el hogar'},
-        {k:'idMethod',label:'Forma de identificación'}
-      ];
-      fields.forEach(f=>{
-        const row = document.createElement('div'); row.style.marginBottom='6px';
-        const lbl = document.createElement('div'); lbl.style.fontSize='0.9em'; lbl.style.color='#444'; lbl.textContent = f.label;
-        const val = document.createElement('div'); val.style.fontWeight='600'; val.style.color='#111';
-        const v = (pet[f.k]===true)?'Sí':(pet[f.k]===false?'No':(pet[f.k]||'—'));
-        val.textContent = v;
-        row.appendChild(lbl); row.appendChild(val); container.appendChild(row);
-      });
+      const token = localStorage.getItem('token');
+      fetch(`/api/mascotas/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(r => r.json())
+      .then(pet => {
+        if(!pet) return;
+        document.getElementById('pet-modal-title').textContent = (pet.nombre||'Sin nombre') + ' — ' + (pet.tipo||'N/D');
+        const container = document.getElementById('pet-fields'); container.innerHTML='';
+        // display fields as read-only text
+        const fields = [
+          {k:'ruac',label:'Clave RUAC'},
+          {k:'nombre',label:'Nombre'},
+          {k:'tipo',label:'Especie'},
+          {k:'raza',label:'Raza'},
+          {k:'fecha_nacimiento',label:'Fecha de Nacimiento'},
+          {k:'sexo',label:'Género'},
+          {k:'esterilizado',label:'¿Esterilizado?'},
+          {k:'microchip',label:'¿Tiene microchip?'},
+          {k:'peso',label:'Peso (kg)'},
+          {k:'comportamiento',label:'Comportamiento'},
+          {k:'condiciones_cronicas',label:'Condiciones Crónicas'},
+          {k:'alergias',label:'Alergias'},
+          {k:'medicamentos',label:'Medicamentos'},
+          {k:'imagen_url',label:'URL Foto'},
+        ];
+        fields.forEach(f=>{
+          const row = document.createElement('div'); row.style.marginBottom='6px';
+          const lbl = document.createElement('div'); lbl.style.fontSize='0.9em'; lbl.style.color='#444'; lbl.textContent = f.label;
+          const val = document.createElement('div'); val.style.fontWeight='600'; val.style.color='#111';
+          const v = (pet[f.k]===true)?'Sí':(pet[f.k]===false?'No':(pet[f.k]||'—'));
+          val.textContent = v;
+          row.appendChild(lbl); row.appendChild(val); container.appendChild(row);
+        });
 
-      // show last appointment summary (if exists)
-      const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-      const appt = appointments.filter(a=>a.petId===id || a.pet===pet.name).slice(-1)[0];
-      if(appt){
-        const info = document.createElement('div'); info.style.marginTop='8px'; info.innerHTML = `<strong>Próxima/última cita:</strong> ${appt.date||appt.day||'N/D'} ${appt.time||appt.hour||''} — ${appt.branch||appt.branchName||'N/D'} / ${appt.doctor||'N/D'}<br><strong>Procedimiento:</strong> ${appt.procedure||appt.padecimiento||'N/D'}<br><strong>Precio:</strong> ${appt.price?('$'+appt.price):'N/D'}`;
-        container.appendChild(info);
-      }
+        // show last appointment summary (if exists)
+        fetch(`/api/citas?mascota_id=${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        .then(r => r.json())
+        .then(appointments => {
+          const appt = appointments.slice(-1)[0];
+          if(appt){
+            const info = document.createElement('div'); info.style.marginTop='8px'; info.innerHTML = `<strong>Próxima/última cita:</strong> ${appt.fecha||'N/D'} ${appt.hora_inicio||''} — ${appt.sucursal_nombre||'N/D'} / ${appt.medico_nombre||'N/D'}<br><strong>Procedimiento:</strong> ${appt.procedimiento||'N/D'}`;
+            container.appendChild(info);
+          }
+        })
+        .catch(handleError);
 
-      document.getElementById('pet-modal').style.display='flex';
-      // store current pet id for reference (read-only)
-      document.getElementById('pet-view-form').dataset.petId = id;
+        document.getElementById('pet-modal').style.display='flex';
+        // store current pet id for reference (read-only)
+        document.getElementById('pet-view-form').dataset.petId = id;
+      })
+      .catch(handleError);
     }
   </script>
   <script>
@@ -149,38 +215,45 @@
       document.querySelectorAll('.profile-info strong').forEach(el=>el.textContent = userName);
       document.querySelectorAll('.avatar').forEach(av=>{ if(av.innerHTML.trim()==='PA'){ av.style.backgroundImage = `url(${avatar})`; av.style.backgroundSize='cover'; av.textContent=''; }});
 
-      fetch('pets.json').then(r=>r.json()).then(pets=>{
+      const token = localStorage.getItem('token');
+      if (!token) {
+        // Handle not logged in case
+        window.location.href = 'formAgregar.html'; // Or show a message
+        return;
+      }
+
+      fetch('/api/mascotas', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(r=>r.json())
+      .then(pets=>{
         const grid = document.getElementById('pets-grid');
         // cache for modal editing
-        window.__pets_cache = pets;
+
         pets.forEach(p=>{
           const a = document.createElement('div'); a.className='card-item';
           a.tabIndex = 0;
           a.dataset.petId = p.id;
           // try to find an appointment for this pet
-          const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-          const appt = appointments.find(a0=> a0.petId===p.id || a0.pet===p.name);
-          const apptInfo = appt ? `<div class="pet-apt"><small>${appt.branch||appt.branchName||''} • ${appt.date||appt.day||''} ${appt.time||appt.hour||''}</small></div>` : '';
+          const apptInfo = ''; // Removed for now, will be loaded in the modal
           const scheduleBtn = `<div style="margin-top:6px"><a class="btn-primary" href="citas.html#pet-${p.id}" onclick="event.stopPropagation()">Agendar cita</a></div>`;
-          a.innerHTML = `<img src="${p.image}" alt="${p.name}"><div class="card-body"><h3>${p.name}</h3><small>${p.age} · ${p.status || ''}</small>${apptInfo}${scheduleBtn}</div>`;
+          a.innerHTML = `<img src="${p.imagen_url}" alt="${p.nombre}"><div class="card-body"><h3>${p.nombre}</h3><small>${p.fecha_nacimiento} · ${p.sexo || ''}</small>${apptInfo}${scheduleBtn}</div>`;
           a.addEventListener('click', (e)=>{ if(e.target.closest && (e.target.closest('a') || e.target.closest('button'))) return; e.preventDefault(); openPetDetail(p.id); });
           grid.appendChild(a);
         });
-      }).catch(err=>{
-        console.error(err);
-        // fallback to local cache
-        const grid = document.getElementById('pets-grid');
-        const pets = JSON.parse(localStorage.getItem('pets_cache')||'[]');
-        window.__pets_cache = pets;
-        pets.forEach(p=>{
-          const a = document.createElement('div'); a.className='card-item'; a.tabIndex=0;
-          a.dataset.petId = p.id;
-          const scheduleBtn = `<div style="margin-top:6px"><a class="btn-primary" href="citas.html#pet-${p.id}" onclick="event.stopPropagation()">Agendar cita</a></div>`;
-          a.innerHTML = `<img src="${p.image}" alt="${p.name}"><div class="card-body"><h3>${p.name}</h3><small>${p.age} · ${p.status}</small>${scheduleBtn}</div>`;
-          a.addEventListener('click', (e)=>{ if(e.target.closest && (e.target.closest('a') || e.target.closest('button'))) return; e.preventDefault(); openPetDetail(p.id); });
-          grid.appendChild(a);
-        });
-      });
+      })
+      .catch(handleError);
+    })();
+  </script>
+
+  <script>
+    (function() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'formAgregar.html';
+      }
     })();
   </script>
 </body>

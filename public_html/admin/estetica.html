@@ -28,19 +28,7 @@
   <main class="container" style="padding:20px">
     <h1>Estética y baño</h1>
     <p class="muted">Accesorios y productos para cuidado e higiene.</p>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <article class="producto" style="width:180px;height:220px;padding:0;border-radius:6px;overflow:hidden">
-        <img src="../img/extras/doge.jpg" style="width:100%;height:160px;object-fit:cover;display:block">
-        <div style="padding:8px;text-align:center"><h3 style="margin:0;font-size:14px">Shampoo medicado</h3><div class="muted" style="font-size:12px">Cuidado dermatológico</div><div style="margin-top:6px;color:#22c55e;font-weight:700">$180.00</div></div>
-      </article>
-      <article class="producto" style="width:180px;height:220px;padding:0;border-radius:6px;overflow:hidden">
-        <img src="../img/extras/doge.jpg" style="width:100%;height:160px;object-fit:cover;display:block">
-        <div style="padding:8px;text-align:center"><h3 style="margin:0;font-size:14px">Cortauñas</h3><div class="muted" style="font-size:12px">Acero inoxidable</div><div style="margin-top:6px;color:#22c55e;font-weight:700">$75.00</div></div>
-      </article>
-      <article class="producto" style="width:180px;height:220px;padding:0;border-radius:6px;overflow:hidden">
-        <img src="../img/extras/doge.jpg" style="width:100%;height:160px;object-fit:cover;display:block">
-        <div style="padding:8px;text-align:center"><h3 style="margin:0;font-size:14px">Toalla absorbente</h3><div class="muted" style="font-size:12px">Microfibra</div><div style="margin-top:6px;color:#22c55e;font-weight:700">$99.00</div></div>
-      </article>
+    <div id="product-list" style="display:flex;gap:12px;flex-wrap:wrap">
     </div>
   </main>
   <footer class="site-footer">
@@ -49,6 +37,74 @@
       <small class="muted">Términos y condiciones · Política de privacidad</small>
     </div>
   </footer>
+
+  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+    <div class="login-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+      <form id="login-form" class="login-form">
+        <h2>Ingresar</h2>
+        <input type="email" id="login-email" placeholder="Usuario" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
   <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
+  <script>
+    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
+    function closeOnOutsideClick(event) {
+      const modal = document.getElementById('login-modal');
+      if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin();
+    }
+    
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error al iniciar sesión');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al iniciar sesión');
+        });
+    });
+
+    (function() {
+        const productList = document.getElementById('product-list');
+        fetch('/api/productos?categoria=Estética y baño')
+            .then(response => response.json())
+            .then(products => {
+                products.forEach(product => {
+                    const article = document.createElement('article');
+                    article.className = 'producto';
+                    article.style = "width:180px;height:220px;padding:0;border-radius:6px;overflow:hidden";
+                    article.innerHTML = `
+                        <img src="${product.imagen_url || '../img/extras/doge.jpg'}" style="width:100%;height:160px;object-fit:cover;display:block">
+                        <div style="padding:8px;text-align:center"><h3 style="margin:0;font-size:14px">${product.nombre}</h3><div class="muted" style="font-size:12px">${product.descripcion}</div><div style="margin-top:6px;color:#22c55e;font-weight:700">$${product.precio.toFixed(2)}</div></div>
+                    `;
+                    productList.appendChild(article);
+                });
+            })
+            .catch(error => console.error('Error fetching products:', error));
+    })();
+  </script>
 </body>
 </html>

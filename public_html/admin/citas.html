@@ -37,6 +37,53 @@
     </div>
   </header>
     
+  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+    <div class="login-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+      <form id="login-form" class="login-form">
+        <h2>Ingresar</h2>
+        <input type="email" id="login-email" placeholder="Usuario" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+    <script>
+    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
+    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
+    function closeOnOutsideClick(event) { const modal = document.getElementById('login-modal'); if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin(); }
+    
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error al iniciar sesión');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al iniciar sesión');
+        });
+    });
+    </script>
+
+    
   <div class="container layout" style="display:flex;gap:20px;align-items:flex-start">
     <aside class="sidebar" style="min-width:220px;max-width:260px">
       <nav class="sidebar-list">
@@ -92,169 +139,196 @@
     </div>
   </footer>
 
-  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-    <div class="login-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <form class="login-form">
-        <h2>Ingresar</h2>
-        <input type="text" placeholder="Usuario" required>
-        <input type="password" placeholder="Contraseña" required>
-        <button class="btn-primary">Entrar</button>
-      </form>
-    </div>
-  </div>
+  <script>
+    (function() {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
 
-    <script>
-    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    function closeOnOutsideClick(event) { const modal = document.getElementById('login-modal'); if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin(); }
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Load branches and show available slots; appointments in localStorage
-    (function(){
-      const branchSelect = document.getElementById('branch-select');
-      const doctorSelect = document.getElementById('doctor-select');
-      const specialtySelect = document.getElementById('specialty-select');
-      const daySelect = document.getElementById('day-select');
-      const slotsList = document.getElementById('slots-list');
-      const upcoming = document.getElementById('upcoming-appointments');
-      let branches = [];
-
-      function loadBranches(){
-        fetch('branches.json').then(r=>r.json()).then(j=>{
-          branches = j.branches || [];
-          branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
-          branchSelect.dispatchEvent(new Event('change'));
-          renderUpcoming();
-        }).catch(err=>{ console.error(err); upcoming.innerHTML='<p class="muted">No se pudieron cargar sucursales.</p>'; });
-      }
-
-      function populateDoctors(){
-        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
-        doctorSelect.innerHTML = (b.doctors||[]).map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
-        populateSpecialties();
-        populateDays();
-      }
-
-      function populateSpecialties(){
-        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
-        // gather unique specialties available in this branch
-        const specs = Array.from(new Set((b.doctors||[]).map(d=>d.specialty).filter(Boolean)));
-        // if a doctor is selected, prefer that doctor's specialty and make select readonly-like
-        const selectedDoctor = (b.doctors||[]).find(d=>String(d.id)===String(doctorSelect.value));
-        if(selectedDoctor){
-          specialtySelect.innerHTML = `<option value="${selectedDoctor.specialty}">${selectedDoctor.specialty}</option>`;
-          specialtySelect.disabled = true;
-        } else {
-          specialtySelect.disabled = false;
-          if(specs.length===0){ specialtySelect.innerHTML = '<option value="">—</option>'; }
-          else { specialtySelect.innerHTML = specs.map(s=>`<option value="${s}">${s}</option>`).join(''); }
+        if (!token || !user) {
+            window.location.href = 'formAgregar.html';
+            return;
         }
-      }
 
-      function populateDays(){
-        daySelect.innerHTML='';
-        const today = new Date();
-        for(let i=0;i<7;i++){ const d=new Date(today.getFullYear(), today.getMonth(), today.getDate()+i); daySelect.innerHTML += `<option value="${d.toISOString().slice(0,10)}">${d.toLocaleDateString()}</option>` }
-        daySelect.dispatchEvent(new Event('change'));
-      }
+        const isRecepcionista = user.rol === 'recepcionista';
+        const isMedico = user.rol === 'medico';
+        const isCliente = user.rol === 'cliente';
 
-      function loadOwnersSuggestions(){
-        fetch('owners.json').then(r=>r.json()).then(list=>{ const dl = document.getElementById('owners-list'); dl.innerHTML=''; (list||[]).forEach(o=>{ const opt = document.createElement('option'); opt.value = o.name; dl.appendChild(opt); }); }).catch(()=>{/* ignore */});
-      }
-
-      function renderSlots(){
-        slotsList.innerHTML='';
-        const date = daySelect.value;
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        // basic slots 09:00-17:00
-        for(let h=9; h<=17; h++){
-          const time = (h<10? '0'+h : ''+h) + ':00';
-          const taken = appointments.find(a=>a.date===date && a.time===time && a.branch===branchSelect.value && a.doctor===doctorSelect.value);
-          const btn = document.createElement('button'); btn.className = taken? 'btn-ghost' : 'btn-primary'; btn.textContent = time + (taken? ' — Ocupado':' — Reservar');
-          btn.disabled = !!taken;
-          btn.addEventListener('click', ()=>openBookingPanel(date, time));
-          slotsList.appendChild(btn);
+        if (!isRecepcionista && !isMedico && !isCliente) {
+            window.location.href = 'formAgregar.html';
+            return;
         }
-        // If page opened with a pet hash, auto-open first available slot
-        try{
-          const panel = document.getElementById('booking-panel');
-          const petId = panel && panel.dataset && panel.dataset.petId;
-          if(petId){
-            // find first non-disabled slot button
-            const firstAvailable = Array.from(slotsList.querySelectorAll('button')).find(b=>!b.disabled);
-            if(firstAvailable){
-              // trigger click to open booking panel for that slot
-              firstAvailable.click();
+
+        const bookingOwnerInput = document.getElementById('booking-owner');
+        if (isCliente) {
+            bookingOwnerInput.value = user.nombre_completo;
+            bookingOwnerInput.disabled = true;
+        }
+
+        const branchSelect = document.getElementById('branch-select');
+        const doctorSelect = document.getElementById('doctor-select');
+        const specialtySelect = document.getElementById('specialty-select');
+        const daySelect = document.getElementById('day-select');
+        const slotsList = document.getElementById('slots-list');
+        const upcoming = document.getElementById('upcoming-appointments');
+        let branches = [];
+
+        function loadBranches(){
+            fetch('/api/sucursales', {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-          }
-        }catch(e){/* ignore */}
-      }
-
-      function openBookingPanel(date, time){
-        loadOwnersSuggestions();
-        const panel = document.getElementById('booking-panel'); panel.dataset.date = date; panel.dataset.time = time; panel.style.display = 'block';
-        // if a pet was passed via hash, prefill owner
-        const petId = panel.dataset.petId || document.getElementById('pet-view')?.dataset?.petId || null;
-        if(petId){
-          const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-          const pet = pets.find(x=>String(x.id)===String(petId));
-          if(pet){
-            const ownerInput = document.getElementById('booking-owner');
-            ownerInput.value = pet.owner || pet.ownerName || pet.name || ownerInput.value;
-          }
+            }).then(r=>r.json()).then(j=>{
+            branches = j || [];
+            branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
+            branchSelect.dispatchEvent(new Event('change'));
+            renderUpcoming();
+            }).catch(err=>{ console.error(err); upcoming.innerHTML='<p class="muted">No se pudieron cargar sucursales.</p>'; });
         }
-        // focus owner input
-        document.getElementById('booking-owner').focus();
-      }
 
-      document.getElementById('booking-cancel').addEventListener('click', ()=>{ document.getElementById('booking-panel').style.display='none'; });
-      document.getElementById('booking-confirm').addEventListener('click', ()=>{
-        const owner = document.getElementById('booking-owner').value.trim();
-        const procedure = document.getElementById('booking-procedure').value.trim();
-        if(!owner){ alert('Ingresa o selecciona el dueño.'); return; }
-        const panel = document.getElementById('booking-panel'); const date = panel.dataset.date; const time = panel.dataset.time;
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        const petIdForAppointment = panel.dataset.petId || null;
-        const appt = {id:Date.now(), owner, branch:branchSelect.value, doctor:doctorSelect.value, date, time, procedure};
-        if(petIdForAppointment) appt.petId = petIdForAppointment;
-        appointments.push(appt);
-        localStorage.setItem('appointments', JSON.stringify(appointments));
-        panel.style.display='none'; renderSlots(); renderUpcoming(); alert('Cita agendada');
-      });
+        function populateDoctors(){
+            fetch('/api/doctores', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+            }).then(r => r.json()).then(doctors => {
+            doctorSelect.innerHTML = (doctors||[]).map(d=>`<option value="${d.id}">${d.nombre} — ${d.especialidad}</option>`).join('');
+            populateSpecialties();
+            populateDays();
+            });
+        }
 
-      function renderUpcoming(){
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        if(!appointments.length){ upcoming.innerHTML='<p class="muted">No hay citas próximas.</p>'; return; }
-        const list = document.createElement('ul');
-        appointments.slice(-10).reverse().forEach(a=>{
-          const b = branches.find(x=>x.id===a.branch); const doc = (b && b.doctors)? b.doctors.find(d=>d.id===a.doctor) : null;
-          const li = document.createElement('li'); li.textContent = `${a.date} ${a.time} — ${a.owner} — ${b?b.name:'-'} / ${doc?doc.name:'-'}`;
-          list.appendChild(li);
+        function populateSpecialties(){
+            fetch('/api/doctores', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+            }).then(r => r.json()).then(doctors => {
+            const specs = Array.from(new Set((doctors||[]).map(d=>d.especialidad).filter(Boolean)));
+            const selectedDoctor = (doctors||[]).find(d=>String(d.id)===String(doctorSelect.value));
+            if(selectedDoctor){
+                specialtySelect.innerHTML = `<option value="${selectedDoctor.especialidad}">${selectedDoctor.especialidad}</option>`;
+                specialtySelect.disabled = true;
+            } else {
+                specialtySelect.disabled = false;
+                if(specs.length===0){ specialtySelect.innerHTML = '<option value="">—</option>'; }
+                else { specialtySelect.innerHTML = specs.map(s=>`<option value="${s}">${s}</option>`).join(''); }
+            }
+            });
+        }
+
+        function populateDays(){
+            daySelect.innerHTML='';
+            const today = new Date();
+            for(let i=0;i<7;i++){ const d=new Date(today.getFullYear(), today.getMonth(), today.getDate()+i); daySelect.innerHTML += `<option value="${d.toISOString().slice(0,10)}">${d.toLocaleDateString()}</option>` }
+            daySelect.dispatchEvent(new Event('change'));
+        }
+
+        function renderSlots(){
+            slotsList.innerHTML='';
+            const date = daySelect.value;
+            fetch(`/api/citas?fecha=${date}&sucursal_id=${branchSelect.value}&medico_id=${doctorSelect.value}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+            }).then(r => r.json()).then(appointments => {
+            for(let h=9; h<=17; h++){
+                const time = (h<10? '0'+h : ''+h) + ':00';
+                const taken = appointments.find(a=>a.hora_inicio===time);
+                const btn = document.createElement('button'); btn.className = taken? 'btn-ghost' : 'btn-primary'; btn.textContent = time + (taken? ' — Ocupado':' — Reservar');
+                btn.disabled = !!taken;
+                btn.addEventListener('click', ()=>openBookingPanel(date, time));
+                slotsList.appendChild(btn);
+            }
+            });
+        }
+
+        function openBookingPanel(date, time){
+            const panel = document.getElementById('booking-panel'); panel.dataset.date = date; panel.dataset.time = time; panel.style.display = 'block';
+            if (isCliente) {
+                const ownerInput = document.getElementById('booking-owner');
+                ownerInput.value = user.nombre_completo;
+                ownerInput.disabled = true;
+            }
+        }
+
+        document.getElementById('booking-cancel').addEventListener('click', ()=>{ document.getElementById('booking-panel').style.display='none'; });
+        document.getElementById('booking-confirm').addEventListener('click', ()=>{
+            const ownerInput = document.getElementById('booking-owner');
+            const ownerName = ownerInput.value.trim();
+            const procedure = document.getElementById('booking-procedure').value.trim();
+            if(!ownerName){ alert('Ingresa o selecciona el dueño.'); return; }
+            const panel = document.getElementById('booking-panel');
+            const date = panel.dataset.date;
+            const time = panel.dataset.time;
+
+            Promise.all([
+            fetch(`/api/usuarios?nombre_completo=${ownerName}`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+            fetch('/api/mascotas', { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+            ]).then(([users, pets]) => {
+            const owner = users[0];
+            if (!owner) {
+                alert('Dueño no encontrado');
+                return;
+            }
+            const petIdForAppointment = panel.dataset.petId || null;
+            const pet = pets.find(p => p.propietario_id === owner.id);
+            if (!pet) {
+                alert('Mascota no encontrada');
+                return;
+            }
+
+            const appt = {
+                mascota_id: pet.id,
+                medico_id: doctorSelect.value,
+                sucursal_id: branchSelect.value,
+                fecha: date,
+                hora_inicio: time,
+                procedimiento: procedure
+            };
+
+            fetch('/api/citas', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(appt)
+            }).then(r => {
+                if (r.ok) {
+                panel.style.display = 'none';
+                renderSlots();
+                renderUpcoming();
+                alert('Cita agendada');
+                } else {
+                alert('Error al agendar la cita');
+                }
+            });
+            });
         });
-        upcoming.innerHTML=''; upcoming.appendChild(list);
-      }
 
-      branchSelect.addEventListener('change', populateDoctors);
-      doctorSelect.addEventListener('change', ()=>{ populateSpecialties(); renderSlots(); });
-      specialtySelect.addEventListener('change', renderSlots);
-      daySelect.addEventListener('change', renderSlots);
+        function renderUpcoming(){
+            fetch('/api/citas', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+            }).then(r => r.json()).then(appointments => {
+            if(!appointments.length){ upcoming.innerHTML='<p class="muted">No hay citas próximas.</p>'; return; }
+            const list = document.createElement('ul');
+            appointments.slice(-10).reverse().forEach(a=>{
+                const li = document.createElement('li'); li.textContent = `${a.fecha} ${a.hora_inicio} — ${a.propietario_nombre} — ${a.sucursal_nombre} / ${a.medico_nombre}`;
+                list.appendChild(li);
+            });
+            upcoming.innerHTML=''; upcoming.appendChild(list);
+            });
+        }
 
-      loadBranches();
-      // If page was opened with a pet anchor like #pet-123, prefill booking owner when user opens a slot
-      function prefillFromHash(){
-        const m = location.hash.match(/#pet-(\d+)/);
-        if(!m) return;
-        const petId = m[1];
-        // store petId on booking panel so openBookingPanel will use it
-        const panel = document.getElementById('booking-panel'); if(panel) panel.dataset.petId = petId;
-        // try to prefill owner input now (if panel visible) or leave for openBookingPanel
-        const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-        const pet = pets.find(x=>String(x.id)===String(petId));
-        if(pet){ const ownerInput = document.getElementById('booking-owner'); if(ownerInput) ownerInput.value = pet.owner || pet.ownerName || pet.name || ownerInput.value; }
-      }
-      prefillFromHash();
+        branchSelect.addEventListener('change', populateDoctors);
+        doctorSelect.addEventListener('change', ()=>{ populateSpecialties(); renderSlots(); });
+        specialtySelect.addEventListener('change', renderSlots);
+        daySelect.addEventListener('change', renderSlots);
+
+        loadBranches();
     })();
-    </script>
+  </script>
 </body>
 </html>

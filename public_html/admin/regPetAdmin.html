@@ -35,60 +35,59 @@
                 .reg-card .dependent { display:none; flex-direction:column; gap:8px; }
         </style>
     </head>
-
-    <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-        <div class="login-content">
-            <span class="close" onclick="document.getElementById('login-modal').style.display = 'none'">&times;</span>
-            <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
-            <form class="login-form">
-                <h2>Iniciar Sesión</h2>
-                <input type="text" placeholder="Usuario">
-                <input type="password" placeholder="Contraseña">
-                <button type="submit">Entrar</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function openLogin() {
-            document.getElementById('login-modal').style.display = 'flex';
-        }
-
-        function closeLogin() {
-            document.getElementById('login-modal').style.display = 'none';
-        }
-
-        // Cierra si se hace clic fuera del cuadro de login
-        function closeOnOutsideClick(event) {
-            const modal = document.getElementById('login-modal');
-            const box = modal.querySelector('.login-box');
-
-            if (!box.contains(event.target)) {
-                closeLogin();
-            }
-        }
-
-        function regValNum(event) {
-            const numeros = "1234567890";
-            const tecla = String.fromCharCode(event.which || event.keyCode);
-            if (numeros.indexOf(tecla) === -1) {
-                alert("Por favor, ingresa solo números");
-                return false;
-            }
-            return true;
-        }
-
-        function regValText(event) {
-            const letras = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ ";
-            const tecla = String.fromCharCode(event.which || event.keyCode);
-            if (letras.indexOf(tecla) === -1) {
-                alert("Por favor, ingresa solo texto");
-                return false;
-            }
-            return true;
-        }
-    </script>
     <body>
+        <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+            <div class="login-content">
+                <span class="close" onclick="document.getElementById('login-modal').style.display = 'none'">&times;</span>
+                <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
+                <form class="login-form">
+                    <h2>Iniciar Sesión</h2>
+                    <input type="text" placeholder="Usuario">
+                    <input type="password" placeholder="Contraseña">
+                    <button type="submit">Entrar</button>
+                </form>
+            </div>
+        </div>
+    
+        <script>
+            function openLogin() {
+                document.getElementById('login-modal').style.display = 'flex';
+            }
+    
+            function closeLogin() {
+                document.getElementById('login-modal').style.display = 'none';
+            }
+    
+            // Cierra si se hace clic fuera del cuadro de login
+            function closeOnOutsideClick(event) {
+                const modal = document.getElementById('login-modal');
+                const box = modal.querySelector('.login-box');
+    
+                if (!box.contains(event.target)) {
+                    closeLogin();
+                }
+            }
+    
+            function regValNum(event) {
+                const numeros = "1234567890";
+                const tecla = String.fromCharCode(event.which || event.keyCode);
+                if (numeros.indexOf(tecla) === -1) {
+                    alert("Por favor, ingresa solo números");
+                    return false;
+                }
+                return true;
+            }
+    
+            function regValText(event) {
+                const letras = "abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ ";
+                const tecla = String.fromCharCode(event.which || event.keyCode);
+                if (letras.indexOf(tecla) === -1) {
+                    alert("Por favor, ingresa solo texto");
+                    return false;
+                }
+                return true;
+            }
+        </script>
         <header class="site-header">
             <div class="container header-inner">
                     <a class="brand" href="initPag.html">🐶 TechSide Vet</a>
@@ -108,7 +107,7 @@
                 <div class="header-actions">
                     <a class="active" href="initPag.html">Registrarse</a>
                     <!--<button class="btn-ghost">Registrarse</button>-->
-                    <button class="btn-primary" onclick="location.href='formAgregar.html'">Entrar</button>
+                    <button class="btn-primary" onclick="openLogin()">Entrar</button>
                 </div>
             </div>
         </header>
@@ -117,7 +116,7 @@
             <div class="reg-container">
 
                                 <!-- Un solo formulario que engloba ambas tarjetas -->
-                                <form id="regPetForm" method="post" action="desplegar.jsp" class="form-size" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;width:100%;">
+                                <form id="regPetForm" class="form-size" style="display:flex;flex-wrap:wrap;gap:2rem;justify-content:center;width:100%;">
 
                     <!-- Primera tarjeta -->
                     <div class="reg-card">
@@ -274,10 +273,42 @@
             </div>
         </footer>
 
-        <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
+        <script>
+            document.getElementById('regPetForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+
+                const token = localStorage.getItem('token');
+
+                fetch('/api/mascotas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Mascota registrada con éxito');
+                        window.location.href = 'listas.html';
+                    } else {
+                        alert('Error al registrar la mascota');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al registrar la mascota');
+                });
+            });
+        </script>
         <script>
             // Cargar razas/especies desde JSON (archivo admin/razas.json)
-            fetch('razas.json')
+            fetch('/api/razas', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
                 .then(r => r.json())
                 .then(razasData => {
                     const razas = razasData;
@@ -355,10 +386,14 @@
 
                                         // Try to populate owners datalist if the datalist exists
                                         if(ownersList){
-                                            fetch('owners.json').then(r=>r.json()).then(data=>{
-                                                (data || []).forEach(o => { const opt=document.createElement('option'); opt.value = o.name; ownersList.appendChild(opt); });
+                                            fetch('/api/usuarios', {
+                                                headers: {
+                                                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                                }
+                                            }).then(r=>r.json()).then(data=>{
+                                                (data || []).forEach(o => { const opt=document.createElement('option'); opt.value = o.nombre_completo; ownersList.appendChild(opt); });
                                             }).catch(()=>{
-                                                ['María G.','Carlos R.','Luis P.'].forEach(n=>{ const opt=document.createElement('option'); opt.value=n; ownersList.appendChild(opt); });
+                                                // fallback
                                             });
                                         }
 
