@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+<<<<<<< HEAD
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -34,6 +35,10 @@ router.post('/register', upload.fields([
     { name: 'proof_id', maxCount: 1 }       // Identificación oficial
 ]), authController.register);
 
+=======
+
+router.post('/register', authController.register);
+>>>>>>> parent of 6808385 (actualkizacion defectuosa usar como reestore si funciona)
 router.post('/login', authController.login);
 
 module.exports = router;

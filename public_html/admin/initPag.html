@@ -13,10 +13,10 @@
       <div class="login-content">
         <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
         <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
-        <form id="login-form" class="login-form">
+        <form class="login-form">
           <h2>Iniciar Sesión</h2>
-          <input type="email" id="login-email" placeholder="Usuario" required>
-          <input type="password" id="login-password" placeholder="Contraseña" required>
+          <input type="text" placeholder="Usuario" required>
+          <input type="password" placeholder="Contraseña" required>
           <button type="submit">Entrar</button>
         </form>
       </div>
@@ -31,42 +31,15 @@
           document.getElementById('login-modal').style.display = 'none';
         }
 
-        function closeOnOutsideClick(event) {
-          const modal = document.getElementById('login-modal');
-          const box = modal.querySelector('.login-content');
+function closeOnOutsideClick(event) {
+  const modal = document.getElementById('login-modal');
+  const box = modal.querySelector('.login-content');
 
-          if (box && !box.contains(event.target)) {
-            closeLogin();
-          }
-        }
+  if (box && !box.contains(event.target)) {
+    closeLogin();
+  }
+}
 
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Error al iniciar sesión');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al iniciar sesión');
-            });
-        });
     </script>
     
 <body>
@@ -78,7 +51,7 @@
         <a href="prodCatalog.html">Tienda</a>
         <a href="horario.html">Disponibilidad</a>
         <a href="listas.html">Mis mascotas</a>
-        <a href="listas.html">Mi cuenta</a>
+        <a href="regUser.html">Mi cuenta</a>
       </nav>
       <div class="header-actions">
         <button class="btn-ghost" ><a href="formAgregar.html">Registrarse</a></button>

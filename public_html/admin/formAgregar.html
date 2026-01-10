@@ -79,7 +79,7 @@
                 <!-- Registro -->
                 <div class="reg-card">
                   <h2>Regístrate</h2>
-                  <form id="register-form" class="form-size" enctype="multipart/form-data">
+                  <form method="post" action="desplegar.jsp" class="form-size" enctype="multipart/form-data">
                     <input type="hidden" name="role" value="cliente">
 
                     <label>
@@ -253,9 +253,9 @@
                 <!-- Inicio de sesión -->
                 <div class="reg-card">
                   <h2>Inicia Sesión</h2>
-                  <form id="login-form-page">
-                    <input type="email" id="login-email" placeholder="Correo" required>
-                    <input type="password" id="login-password" placeholder="Contraseña" required>
+                  <form method="post" action="valUsr.jsp">
+                    <input type="text" name="usr" placeholder="Correo" required>
+                    <input type="password" name="pass" placeholder="Contraseña" required>
                     <button type="submit" class="reg-btn-submit">Ingresar</button>
                   </form>
                   Si ya tienes una cuenta inicia sesion
@@ -274,7 +274,9 @@
     </div>
   </footer>
 
+  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
   <script>
+<<<<<<< HEAD
     document.getElementById('year').textContent = new Date().getFullYear();
 
     document.getElementById('login-form-page').addEventListener('submit', function(e) {
@@ -339,8 +341,10 @@
     });
 });
 
+=======
+>>>>>>> parent of 6808385 (actualkizacion defectuosa usar como reestore si funciona)
     // Populate Mexican states/municipios/colonias from JSON
-    fetch('/api/mx_divisiones')
+    fetch('mx_divisions.json')
       .then(r=>r.json())
       .then(data=>{
         // keep in-memory reference for validation and use
@@ -349,8 +353,6 @@
         try{ localStorage.setItem('mx_divisions_cache', JSON.stringify(data)); }catch(e){}
 
         const stateSelect = document.getElementById('mx_state');
-        if (!stateSelect) return;
-        
         const municipioSelect = document.getElementById('mx_municipio');
         const coloniaSelect = document.getElementById('mx_colonia');
         Object.keys(data).sort((a,b)=>a.localeCompare(b,'es')).forEach(state=>{
@@ -365,32 +367,17 @@
         municipioSelect.addEventListener('change', ()=>{
           coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
           const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
-          cols.sort((x,y)=> (x.name||'').localeCompare(y.name||'','es')).forEach(c=>{
-            const o=document.createElement('option');
-            o.value=c.name; // Revert to storing just the colonia name
-            o.textContent=c.name;
-            coloniaSelect.appendChild(o);
-          });
+          cols.sort((x,y)=> (x.name||'').localeCompare(y.name||'','es')).forEach(c=>{ const o=document.createElement('option'); o.value=c.name; o.textContent=c.name; coloniaSelect.appendChild(o); });
         });
         // when colonia changes, autofill CP if available
         coloniaSelect.addEventListener('change', ()=>{
           try{
+            const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
             const sel = coloniaSelect.value;
-            const cpInput = document.querySelector('input[name="cp"]');
-            if (cpInput) { // Ensure cpInput exists
-                const cols = (window.mx_divisions[stateSelect.value] || {})[municipioSelect.value] || [];
-                const found = cols.find(x=>x.name===sel);
-                if(found && found.cp){
-                    cpInput.value = found.cp;
-                } else {
-                    cpInput.value = ''; // Clear CP if no valid cp is found
-                }
-            }
-          }catch(e){
-            console.error('Error finding selected colonia CP:', e);
-            const cpInput = document.querySelector('input[name="cp"]');
-            if (cpInput) cpInput.value = ''; // Clear CP on error
-          }
+            const found = cols.find(x=>x.name===sel);
+            if(found && found.cp){ const cpInput = document.querySelector('input[name="cp"]'); if(cpInput) cpInput.value = found.cp; }
+          }catch(e){}
+        });
       })
       .catch(err=>{
         console.error('Error cargando mx_divisions.json',err);
@@ -400,6 +387,57 @@
           if(Object.keys(cached).length>0){ window.mx_divisions = cached; const stateSelect=document.getElementById('mx_state'); Object.keys(cached).forEach(s=>{ const opt=document.createElement('option'); opt.value=s; opt.textContent=s; stateSelect.appendChild(opt); }); }
         }catch(e){ }
       });
+
+    // Validation helpers
+    const curpRegex = /^[A-ZÑ]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i;
+    const rfcRegex = /^([A-ZÑ&]{3,4})\d{6}([A-Z0-9]{3})?$/i;
+
+        document.querySelector('form[action="desplegar.jsp"]').addEventListener('submit', function(e){
+      const curp = this.querySelector('input[name="curp"]').value.trim();
+      const rfc = this.querySelector('input[name="rfc"]').value.trim();
+      const email = this.querySelector('input[name="email"]').value.trim();
+      const idType = this.querySelector('select[name="id_type"]').value;
+      const idNumber = this.querySelector('input[name="id_number"]').value.trim();
+      if(!curpRegex.test(curp)){
+        e.preventDefault(); alert('CURP no válido. Verifica el formato.'); return false;
+      }
+      if(rfc && !rfcRegex.test(rfc)){
+        e.preventDefault(); alert('RFC no válido.'); return false;
+      }
+      if(!/.+@.+\..+/.test(email)){
+        e.preventDefault(); alert('Correo electrónico no válido.'); return false;
+      }
+      // Validate CP matches selected colonia
+      const selectedCol = document.getElementById('mx_colonia').value;
+      const cpInput = this.querySelector('input[name="cp"]').value.trim();
+      if(selectedCol){
+        try{
+          const divisions = window.mx_divisions || JSON.parse(localStorage.getItem('mx_divisions_cache') || '{}');
+          let mismatch = false;
+          for(const s of Object.keys(divisions||{})){
+            const muns = divisions[s];
+            for(const mun of Object.keys(muns||{})){
+              const cols = muns[mun] || [];
+              for(const c of cols){ if(c.name===selectedCol && c.cp && c.cp!==cpInput){ mismatch = true; break; } }
+              if(mismatch) break;
+            }
+            if(mismatch) break;
+          }
+          if(mismatch){ e.preventDefault(); alert('El Código Postal no coincide con la colonia seleccionada.'); return false; }
+        }catch(_){ }
+      }
+      // Simple ID rules
+      if(idType === 'INE' && idNumber.length < 15){ e.preventDefault(); alert('INE debe tener al menos 15 caracteres.'); return false; }
+      if(idType === 'Pasaporte' && idNumber.length < 6){ e.preventDefault(); alert('Pasaporte invalido.'); return false; }
+      // Nueva validación: contraseña y aceptación de términos
+      const pwd = this.querySelector('input[name="password"]').value || '';
+      const pwd2 = this.querySelector('input[name="password_confirm"]').value || '';
+      const accept = this.querySelector('input[name="accept_terms"]');
+      if(pwd.length < 8){ e.preventDefault(); alert('La contraseña debe tener al menos 8 caracteres.'); return false; }
+      if(pwd !== pwd2){ e.preventDefault(); alert('Las contraseñas no coinciden.'); return false; }
+      if(accept && !accept.checked){ e.preventDefault(); alert('Debes aceptar los términos y condiciones.'); return false; }
+      return true;
+    });
   </script>
 </body>
 </html>

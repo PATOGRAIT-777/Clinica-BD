@@ -34,81 +34,21 @@
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p>© <span id="year"></span> TechSide</p>
-      <small class="muted">Términos y condiciones · Política de privacidad</small>
-    </div>
-  </footer>
-
-  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-    <div class="login-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <form id="login-form" class="login-form">
-        <h2>Ingresar</h2>
-        <input type="email" id="login-email" placeholder="Usuario" required>
-        <input type="password" id="login-password" placeholder="Contraseña" required>
-        <button type="submit" class="btn-primary">Entrar</button>
-      </form>
-    </div>
-  </div>
-
   <script>
-    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    function closeOnOutsideClick(event) {
-      const modal = document.getElementById('login-modal');
-      if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin();
-    }
-    
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.reload();
-            } else {
-                alert(data.message || 'Error al iniciar sesión');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al iniciar sesión');
-        });
-    });
-
-    document.getElementById('year').textContent = new Date().getFullYear();
+    function openLogin(){/* placeholder */}
     function getCart(){return JSON.parse(localStorage.getItem('cart')||'[]');}
     function setCart(c){localStorage.setItem('cart',JSON.stringify(c)); renderCart();}
-    function updateCartCount(){ const c = getCart(); const qty = c.reduce((s,i)=>s+i.qty,0); document.getElementById('cart-count').textContent = qty; }
-
     function renderCart(){
       const c = getCart(); const container = document.getElementById('cart-contents'); container.innerHTML='';
       if(!c.length){ container.innerHTML='<p class="muted">Tu carrito está vacío.</p>'; document.getElementById('cart-total').textContent='Total: $0.00'; return; }
       let total = 0;
       // load branches for selection
-      fetch('/api/sucursales', {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      }).then(r=>r.json()).then(j=>{
-        const branches = j||[];
+      fetch('branches.json').then(r=>r.json()).then(j=>{
+        const branches = j.branches||[];
         c.forEach((it, idx)=>{
           const row = document.createElement('div'); row.className='cart-row';
           const name = document.createElement('div'); name.style.flex='1'; name.innerHTML=`<strong>${it.name}</strong><div class="muted">$${it.price.toFixed(2)} c/u</div>`;
-          const branchSel = document.createElement('select'); branchSel.style.width='180px'; branchSel.innerHTML = '<option value="">Selecciona sucursal</option>' + branches.map(b=>`<option value="${b.id}" ${it.branch===b.id? 'selected':''}>${b.nombre}</option>`).join('');
+          const branchSel = document.createElement('select'); branchSel.style.width='180px'; branchSel.innerHTML = '<option value="">Selecciona sucursal</option>' + branches.map(b=>`<option value="${b.id}" ${it.branch===b.id? 'selected':''}>${b.name}</option>`).join('');
           branchSel.addEventListener('change', ()=>{ it.branch = branchSel.value; setCart(c); });
           const dateInput = document.createElement('input'); dateInput.type='date'; dateInput.value = it.pickup||''; dateInput.addEventListener('change', ()=>{ it.pickup = dateInput.value; setCart(c); });
           const qty = document.createElement('input'); qty.type='number'; qty.min=1; qty.value=it.qty; qty.style.width='72px'; qty.addEventListener('change', ()=>{ it.qty = Math.max(1,parseInt(qty.value||1,10)); setCart(c); });
@@ -131,44 +71,7 @@
       });
     }
     document.getElementById('clear-cart').addEventListener('click', ()=>{ localStorage.removeItem('cart'); renderCart(); });
-    document.getElementById('checkout').addEventListener('click', ()=>{
-        const cart = getCart();
-        if (cart.length === 0) {
-            alert('El carrito está vacío');
-            return;
-        }
-
-        const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-        const order = {
-            total: total,
-            items: cart.map(item => ({
-                producto_id: item.id, // Assuming the product ID is stored in the cart item
-                cantidad: item.qty,
-                precio: item.price
-            }))
-        };
-
-        const token = localStorage.getItem('token');
-        fetch('/api/ordenes', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(order)
-        }).then(response => {
-            if (response.ok) {
-                alert('Pedido realizado con éxito');
-                localStorage.removeItem('cart');
-                renderCart();
-            } else {
-                alert('Error al realizar el pedido');
-            }
-        }).catch(error => {
-            console.error('Error:', error);
-            alert('Error al realizar el pedido');
-        });
-    });
+    document.getElementById('checkout').addEventListener('click', ()=>{ alert('Checkout simulado. Implementar integración con BD/servicio.'); localStorage.removeItem('cart'); renderCart(); });
     renderCart();
   </script>
 </body>

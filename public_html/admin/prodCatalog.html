@@ -102,40 +102,33 @@
       </div>
 
         <div class="productos">
+          <article class="producto" data-category="ofertas" style="position:relative" data-name="Croquetas Premium" data-price="850">
+            <div style="position:relative">
+            <img src="../img/extras/doge.jpg" alt="Croquetas" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
+            <div class="discount-badge">-15%</div>
+            </div>
+            <h3>Croquetas Premium</h3>
+            <p class="muted">Adulto Raza Mediana</p>
+            <h2 style="color: #22c55e; margin: 10px 0;">$850.00</h2>
+            <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
+          </article>
+
+          <article class="producto" data-category="farmacia" data-name="Pipeta Antipulgas" data-price="250">
+            <img src="../img/extras/doge.jpg" alt="Pipeta" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
+            <h3>Pipeta Antipulgas</h3>
+            <p class="muted">Protección 3 meses</p>
+            <h2 style="color: #22c55e; margin: 10px 0;">$250.00</h2>
+            <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
+          </article>
+
+           <article class="producto" data-category="juguetes" data-name="Juguete Mordedera" data-price="120">
+          <img src="../img/extras/doge.jpg" alt="Juguete" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
+          <h3>Juguete Mordedera</h3>
+          <p class="muted">Alta resistencia</p>
+          <h2 style="color: #22c55e; margin: 10px 0;">$120.00</h2>
+          <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
+        </article>
         </div>
-
-        <script>
-            (function() {
-                const token = localStorage.getItem('token');
-                fetch('/api/productos', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }).then(r => r.json()).then(products => {
-                    const container = document.querySelector('.productos');
-                    container.innerHTML = '';
-                    products.forEach(product => {
-                        const article = document.createElement('article');
-                        article.className = 'producto';
-                        article.dataset.category = product.categoria;
-                        article.dataset.name = product.nombre;
-                        article.dataset.price = product.precio;
-                        article.dataset.id = product.id;
-                        article.innerHTML = `
-                            <div style="position:relative">
-                                <img src="${product.imagen_url || '../img/extras/doge.jpg'}" alt="${product.nombre}" style="width:100%;height:160px;object-fit:cover;border-radius:6px">
-                            </div>
-                            <h3>${product.nombre}</h3>
-                            <p class="muted">${product.descripcion}</p>
-                            <h2 style="color: #22c55e; margin: 10px 0;">$${product.precio.toFixed(2)}</h2>
-                            <div style="display:flex;gap:8px"> <input class="qty" type="number" min="1" value="1" style="width:80px"> <button class="btn-primary add-to-cart">Añadir</button> <button class="btn-ghost buy-now">Comprar ahora</button></div>
-                        `;
-                        container.appendChild(article);
-                    });
-                });
-            })();
-        </script>
-
 
         <!-- Vertical stacked sections with horizontal scrollers (replaces right-side fixed aside) -->
         <section id="shop-sections-vertical">
@@ -257,14 +250,13 @@
     </div>
   </footer>
 
-  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
+  <div id="login-modal" class="login-modal" onclick="if(event.target===this)this.style.display='none'">
     <div class="login-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <form id="login-form" class="login-form">
+      <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+      <form class="login-form">
         <h2>Ingresar</h2>
-        <input type="email" id="login-email" placeholder="Usuario" required>
-        <input type="password" id="login-password" placeholder="Contraseña" required>
-        <button type="submit" class="btn-primary">Entrar</button>
+        <input type="text" placeholder="Usuario"><input type="password" placeholder="Contraseña">
+        <button class="btn-primary">Entrar</button>
       </form>
     </div>
   </div>
@@ -280,39 +272,6 @@
 
     // Lógica del Login
     function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    function closeOnOutsideClick(event) {
-      const modal = document.getElementById('login-modal');
-      if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin();
-    }
-    
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                window.location.reload();
-            } else {
-                alert(data.message || 'Error al iniciar sesión');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al iniciar sesión');
-        });
-    });
 
     // Shopping cart (localStorage)
     function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
@@ -322,21 +281,20 @@
     document.addEventListener('click', function(e){
       if(e.target && e.target.classList.contains('add-to-cart')){
         const art = e.target.closest('.producto');
-        const id = art.dataset.id;
         const name = art.dataset.name || art.querySelector('h3')?.textContent || 'Producto';
         const price = parseFloat(art.dataset.price||0);
         const qtyEl = art.querySelector('.qty');
         const qty = Math.max(1, parseInt(qtyEl?.value||1,10));
         const cart = getCart();
-        const existing = cart.find(i=>i.id===id);
-        if(existing) existing.qty += qty; else cart.push({id,name,price,qty});
+        const existing = cart.find(i=>i.name===name && i.price===price);
+        if(existing) existing.qty += qty; else cart.push({name,price,qty});
         setCart(cart);
         alert(qty + ' × ' + name + ' añadidos al carrito');
       }
       if(e.target && e.target.classList.contains('buy-now')){
         const art = e.target.closest('.producto'); const name = art.dataset.name || art.querySelector('h3')?.textContent || 'Producto';
         const price = parseFloat(art.dataset.price||0); const qty = Math.max(1, parseInt(art.querySelector('.qty')?.value||1,10));
-        localStorage.setItem('checkout_now', JSON.stringify([{id:art.dataset.id,name,price,qty}]));
+        localStorage.setItem('checkout_now', JSON.stringify([{name,price,qty}]));
         location.href = 'cart.html';
       }
     });
