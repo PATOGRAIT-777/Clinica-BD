@@ -13,6 +13,10 @@ CREATE TABLE usuarios (
   direccion jsonb,
   avatar_url text,
   meta jsonb,
+  id_type text,
+  id_number text,
+  proof_address_id uuid REFERENCES archivos(id) ON DELETE SET NULL,
+  proof_id_id uuid REFERENCES archivos(id) ON DELETE SET NULL,
   creado_en timestamptz DEFAULT now(),
   actualizado_en timestamptz DEFAULT now()
 );
