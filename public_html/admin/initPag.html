@@ -11,13 +11,17 @@
 
     <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
       <div class="login-content">
-        <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+        <span class="close" onclick="closeLogin()">&times;</span>
         <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
-        <form class="login-form">
+        
+        <form class="login-form" id="loginForm">
           <h2>Iniciar Sesión</h2>
-          <input type="text" placeholder="Usuario" required>
-          <input type="password" placeholder="Contraseña" required>
-          <button type="submit">Entrar</button>
+          <input type="email" id="loginEmail" placeholder="Usuario (Email)" required>
+          <input type="password" id="loginPassword" placeholder="Contraseña" required>
+          
+          <button type="submit" id="btnLogin">Entrar</button>
+          
+          <p id="loginError" style="color: red; display: none; text-align: center; margin-top: 10px;"></p>
         </form>
       </div>
     </div>
@@ -170,6 +174,83 @@ function closeOnOutsideClick(event) {
     </div>
   </footer>
 
-  <script> document.getElementById('year').textContent = new Date().getFullYear(); </script>
+  <script> 
+  document.getElementById('year').textContent = new Date().getFullYear(); 
+    // Fecha del footer (esto ya lo tenías)
+    const yearSpan = document.getElementById('year');
+    if(yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+    // --- FUNCIONES VISUALES DEL MODAL ---
+    function openLogin() {
+      document.getElementById('login-modal').style.display = 'flex';
+      document.getElementById('loginError').style.display = 'none'; // Limpia errores previos
+    }
+
+    function closeLogin() {
+      document.getElementById('login-modal').style.display = 'none';
+    }
+
+    function closeOnOutsideClick(event) {
+      if (event.target.id === 'login-modal') {
+        closeLogin();
+      }
+    }
+
+    // --- LÓGICA DE CONEXIÓN (NUEVO) ---
+    const loginForm = document.getElementById('loginForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault(); // 1. Evita que la página se recargue
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorMsg = document.getElementById('loginError');
+            const btn = document.getElementById('btnLogin');
+            const originalText = btn.textContent;
+
+            // 2. Estado de carga visual
+            btn.textContent = "Verificando...";
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                // 3. Petición al Backend
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 4. Si es correcto: Guardar sesión
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('usuario', JSON.stringify(data.usuario));
+
+                    // 5. Redireccionar según el rol (Admin o Cliente)
+                    if (data.usuario.rol === 'cliente') {
+                        window.location.href = 'regUser.html';
+                    } else {
+                        window.location.href = 'regUserAdmin.html'; 
+                    }
+                } else {
+                    // Error: Contraseña mal o usuario no existe
+                    errorMsg.textContent = data.mensaje || "Datos incorrectos";
+                    errorMsg.style.display = 'block';
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                errorMsg.textContent = "No se pudo conectar con el servidor";
+                errorMsg.style.display = 'block';
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+  </script>
 </body>
 </html>
