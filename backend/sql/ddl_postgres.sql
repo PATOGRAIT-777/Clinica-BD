@@ -252,3 +252,18 @@ CREATE TABLE productos (
   stock integer DEFAULT 0,
   imagen_url text
 );
+
+-- =================================================================
+-- 9. Contactos de Emergencia / Adicionales
+-- =================================================================
+CREATE TABLE contactos_usuarios (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  usuario_id uuid REFERENCES usuarios(id) ON DELETE CASCADE, -- Si se borra el usuario, se borran sus contactos
+  nombre text NOT NULL,          -- Ej: "Juan Pérez"
+  relacion text,                 -- Ej: "Familiar", "Vecino", "Amigo"
+  telefono text NOT NULL,        -- Ej: "5512345678"
+  creado_en timestamptz DEFAULT now()
+);
+
+-- Índice para buscar rápidamente los contactos de un usuario
+CREATE INDEX idx_contactos_usuario ON contactos_usuarios(usuario_id);

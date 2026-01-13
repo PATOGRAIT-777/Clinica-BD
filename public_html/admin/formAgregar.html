@@ -15,6 +15,9 @@
   .form-size { display:grid; grid-template-columns: 1fr 1fr; gap:12px }
   .form-size .full { grid-column:1 / -1 }
   @media (max-width:880px){ .form-size{grid-template-columns:1fr} }
+  .form-message { margin-bottom:12px; padding:8px; border-radius:4px; display:none }
+  .form-message.success { background:#e6ffed; color:#065f46; border:1px solid #bbf7d0 }
+  .form-message.error { background:#fff1f2; color:#7f1d1d; border:1px solid #fecaca }
 </style>
 
     <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
@@ -79,6 +82,7 @@
                 <!-- Registro -->
                 <div class="reg-card">
                   <h2>Regístrate</h2>
+                  <div id="register-message" class="form-message" aria-live="polite"></div>
                   <form method="post" action="#register" class="form-size" enctype="multipart/form-data">
                     <input type="hidden" name="role" value="cliente">
 
@@ -134,19 +138,19 @@
                       </label>
                       <label>
                         Estado
-                        <select id="mx_state" name="estado" required>
-                          <option value="">-- Selecciona estado --</option>
+                        <select id="mx_state" name="estado" required disabled>
+                          <option value="">Cargando estados...</option>
                         </select>
                       </label>
                       <label>
                         Alcaldía / Municipio
-                        <select id="mx_municipio" name="municipio" required>
+                        <select id="mx_municipio" name="municipio" required disabled>
                           <option value="">-- Selecciona municipio --</option>
                         </select>
                       </label>
                       <label>
                         Colonia
-                        <select id="mx_colonia" name="colonia" required>
+                        <select id="mx_colonia" name="colonia" required disabled>
                           <option value="">-- Selecciona colonia --</option>
                         </select>
                       </label>
@@ -253,6 +257,7 @@
                 <!-- Inicio de sesión -->
                 <div class="reg-card">
                   <h2>Inicia Sesión</h2>
+                  <div id="login-message" class="form-message" aria-live="polite"></div>
                   <form method="post" action="#login">
                     <input type="text" name="usr" placeholder="Correo" required>
                     <input type="password" name="pass" placeholder="Contraseña" required>
@@ -274,144 +279,6 @@
     </div>
   </footer>
 
-  <script>
-    // Configuración del año en el footer
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // --- CARGA DE ESTADOS/MUNICIPIOS (Tu código original) ---
-    fetch('mx_divisions.json')
-      .then(r=>r.json())
-      .then(data=>{
-        try{ window.mx_divisions = data; }catch(e){}
-        try{ localStorage.setItem('mx_divisions_cache', JSON.stringify(data)); }catch(e){}
-
-        const stateSelect = document.getElementById('mx_state');
-        const municipioSelect = document.getElementById('mx_municipio');
-        const coloniaSelect = document.getElementById('mx_colonia');
-        
-        Object.keys(data).sort((a,b)=>a.localeCompare(b,'es')).forEach(state=>{
-          const opt = document.createElement('option'); opt.value = state; opt.textContent = state; stateSelect.appendChild(opt);
-        });
-
-        stateSelect.addEventListener('change', ()=>{
-          municipioSelect.innerHTML = '<option value="">-- Selecciona municipio --</option>';
-          coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
-          const muns = data[stateSelect.value] || {};
-          Object.keys(muns).sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; municipioSelect.appendChild(o); });
-        });
-
-        municipioSelect.addEventListener('change', ()=>{
-          coloniaSelect.innerHTML = '<option value="">-- Selecciona colonia --</option>';
-          const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
-          cols.sort((x,y)=> (x.name||'').localeCompare(y.name||'','es')).forEach(c=>{ const o=document.createElement('option'); o.value=c.name; o.textContent=c.name; coloniaSelect.appendChild(o); });
-        });
-
-        coloniaSelect.addEventListener('change', ()=>{
-          try{
-            const cols = (data[stateSelect.value] || {})[municipioSelect.value] || [];
-            const sel = coloniaSelect.value;
-            const found = cols.find(x=>x.name===sel);
-            if(found && found.cp){ const cpInput = document.querySelector('input[name="cp"]'); if(cpInput) cpInput.value = found.cp; }
-          }catch(e){}
-        });
-      })
-      .catch(err=>{ console.error('Error cargando mx_divisions.json',err); });
-
-    // Reglas de validación
-    const curpRegex = /^[A-ZÑ]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i;
-    const rfcRegex = /^([A-ZÑ&]{3,4})\d{6}([A-Z0-9]{3})?$/i;
-
-    // ==========================================
-    // 1. LÓGICA DE REGISTRO
-    // ==========================================
-    document.querySelector('form[action="#register"]').addEventListener('submit', async function(e){
-      e.preventDefault(); 
-
-      // Validaciones del lado del cliente
-      const curp = this.querySelector('input[name="curp"]').value.trim();
-      const rfc = this.querySelector('input[name="rfc"]').value.trim();
-      const email = this.querySelector('input[name="email"]').value.trim();
-      const idType = this.querySelector('select[name="id_type"]').value;
-      const idNumber = this.querySelector('input[name="id_number"]').value.trim();
-      
-      if(!curpRegex.test(curp)){ alert('CURP no válido.'); return false; }
-      if(rfc && !rfcRegex.test(rfc)){ alert('RFC no válido.'); return false; }
-      if(!/.+@.+\..+/.test(email)){ alert('Correo no válido.'); return false; }
-      
-      // Validar Contraseñas
-      const pwd = this.querySelector('input[name="password"]').value || '';
-      const pwd2 = this.querySelector('input[name="password_confirm"]').value || '';
-      const accept = this.querySelector('input[name="accept_terms"]');
-      
-      if(pwd.length < 8){ alert('La contraseña debe tener al menos 8 caracteres.'); return false; }
-      if(pwd !== pwd2){ alert('Las contraseñas no coinciden.'); return false; }
-      if(accept && !accept.checked){ alert('Debes aceptar los términos.'); return false; }
-      
-      // ENVÍO AL SERVIDOR
-      const formData = new FormData(this); // Aquí sí existe formData
-
-      try {
-        const response = await fetch('http://127.0.0.1:3000/api/auth/register', {
-          method: 'POST',
-          body: formData
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          alert('¡Registro exitoso! ' + (result.message || 'Bienvenido'));
-          e.target.reset(); // Limpia el formulario
-        } else {
-          alert('Error: ' + result.message);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error de conexión: ' + error.message);
-      }
-    });
-
-    // ==========================================
-    // 2. LÓGICA DE LOGIN (Separada correctamente)
-    // ==========================================
-    document.querySelector('form[action="#login"]').addEventListener('submit', async function(e){
-      e.preventDefault(); 
-
-      const emailInput = this.querySelector('input[name="usr"]');
-      const passwordInput = this.querySelector('input[name="pass"]');
-
-      if (!emailInput.value || !passwordInput.value) {
-          alert('Ingresa correo y contraseña.');
-          return;
-      }
-
-      const loginData = {
-          email: emailInput.value,
-          password: passwordInput.value
-      };
-
-      try {
-        const response = await fetch('http://127.0.0.1:3000/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }, // Login usa JSON, no FormData
-            body: JSON.stringify(loginData)
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            alert('¡Bienvenido! ' + (result.user ? result.user.nombre : ''));
-            // Guardar token
-            localStorage.setItem('token', result.token);
-            // Redirigir (ejemplo)
-            // window.location.href = 'dashboard.html';
-        } else {
-            alert('Error al entrar: ' + result.message);
-        }
-      } catch (error) {
-        console.error('Error login:', error);
-        alert('No se pudo conectar con el servidor.');
-      }
-    });
-</script>
+    <script src="../js/formAgregar.js"></script>
 </body>
 </html>

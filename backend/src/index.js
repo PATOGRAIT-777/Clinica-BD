@@ -19,24 +19,58 @@ app.use(express.json()); // Permite recibir datos JSON en los POST
 // Las fotos subidas estarán disponibles en http://localhost:3000/uploads/foto.jpg
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// ... código anterior ...
+
 // 5. Importación de Rutas (Endpoints)
-// NOTA: Asegúrate de que estos archivos existan en la carpeta 'routes/'
-const authRoutes = require('./routes/auth');
-const sucursalRoutes = require('./routes/sucursales');
-const mascotaRoutes = require('./routes/mascotas');
-const citaRoutes = require('./routes/citas');
-const visitaRoutes = require('./routes/visitas');
-const razaRoutes = require('./routes/razas');
-// const doctoresRoutes = require('./routes/doctores'); // Descomentar cuando lo crees
+// ... (código anterior igual)
 
-// 6. Definición de Rutas de la API
-app.use('/api/auth', authRoutes);
-app.use('/api/sucursales', sucursalRoutes);
-app.use('/api/mascotas', mascotaRoutes);
-app.use('/api/citas', citaRoutes);
-app.use('/api/visitas', visitaRoutes);
-app.use('/api/razas', razaRoutes);
+const safeRequire = (relPath) => {
+  try {
+    return require(relPath);
+  } catch (err) {
+    console.warn(`⚠️ Ruta no cargada (falta archivo): ${relPath}`);
+    // console.error(err); // Descomenta para ver el error real si persiste
+    return null;
+  }
+};
 
+// CORRECCIÓN: Usar ./ porque 'routes' está JUNTO a 'index.js' dentro de 'src'
+const authRoutes = safeRequire('./routes/auth');
+const sucursalRoutes = safeRequire('./routes/sucursales');
+const mascotaRoutes = safeRequire('./routes/mascotas');
+const citaRoutes = safeRequire('./routes/citas');
+const visitaRoutes = safeRequire('./routes/visitas');
+const razaRoutes = safeRequire('./routes/razas');
+// ... (código anterior: imports) ...
+const mxDivisionsRoutes = require('./routes/mxDivisions');
+const uploadRoutes = safeRequire('./routes/upload');
+
+
+// 6. Definición de Rutas
+const mountedRoutes = [];
+
+// --- AGREGA ESTE BLOQUE AQUÍ ---
+
+// Registrar rutas de Autenticación (si existe)
+if (authRoutes) {
+    app.use('/api/auth', authRoutes);
+    mountedRoutes.push('/api/auth');
+}
+
+// Registrar rutas de Divisiones (ESTA ES LA QUE TE FALTA)
+// Como usamos 'require' directo (sin safeRequire), no hace falta el 'if'
+app.use('/api/mx-divisions', mxDivisionsRoutes);
+mountedRoutes.push('/api/mx-divisions');
+
+// Registrar rutas de Uploads (si existe)
+if (uploadRoutes) {
+    app.use('/api/upload', uploadRoutes);
+    mountedRoutes.push('/api/upload');
+}
+
+// -------------------------------
+
+// Health check endpoint
 // Ruta base de prueba
 app.get('/', (req, res) => {
   res.send(`Backend Veterinario funcionando correctamente en puerto ${PORT}`);
