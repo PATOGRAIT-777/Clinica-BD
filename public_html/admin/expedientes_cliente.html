@@ -99,6 +99,7 @@
   <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
 
   <script>
+<script src="../js/session.js"></script>
     // cart count
     function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
     function updateCartCount(){ document.getElementById('cart-count').textContent = getCart().reduce((s,i)=>s+i.qty,0); }

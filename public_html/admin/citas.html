@@ -1,287 +1,447 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin — Citas</title>
-  <link rel="stylesheet" href="../css/universalCss.css">
-  <link rel="stylesheet" href="../css/sidebar.css">
-  <link rel="stylesheet" href="../css/divs.css">
-  <style>
-    .calendar{border:1px solid rgba(0,0,0,0.08);padding:12px;border-radius:8px;background:transparent;color:inherit}
-    .card{background:transparent;color:inherit}
-    table{width:100%;border-collapse:collapse}
-    table th, table td{padding:8px;border:1px solid rgba(0,0,0,0.08);background:transparent;color:inherit}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita | TechSide Vet</title>
+    <link rel="stylesheet" href="../css/universalCss.css">
+    <link rel="stylesheet" href="../css/pInicio.css">
+    <style>
+        /* Estilos preservados de tu diseño original */
+        .cita-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .step-wizard {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .step-wizard::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ddd;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+        .step-indicator {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+            color: #666;
+            transition: 0.3s;
+        }
+        .step-indicator.active { background: #16a34a; color: #fff; }
+        .step-indicator.completed { background: #16a34a; color: #fff; }
+        
+        .form-step { display: none; animation: fadeIn 0.5s; }
+        .form-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* GRID DE HORAS (TU DISEÑO ORIGINAL) */
+        .horas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-hora {
+            padding: 10px;
+            border: 1px solid #16a34a;
+            background: #fff;
+            color: #16a34a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-hora:hover { background: #dcfce7; }
+        .btn-hora.active { background: #16a34a; color: #fff; }
+        .btn-hora:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; background: #f9f9f9; }
+
+        .btn-actions { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn-prev, .btn-next {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-prev { background: #e5e7eb; color: #374151; }
+        .btn-next { background: #16a34a; color: #fff; }
+    </style>
+    <script src="../js/session.js"></script>
 </head>
 <body>
-  <script>
-    if (!localStorage.getItem('token')) {
-      window.location.href = 'formAgregar.html';
-    }
-  </script>
 
-  <header class="site-header">
+<header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="../initPag.html">🐶 TechSide Vet</a>
-      <nav class="main-nav">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="pacientes.html">Pacientes</a>
-        <a class="active" href="citas.html">Citas</a>
-        <a href="inventario.html">Inventario</a>
-        <a href="ordenes.html">Órdenes</a>
-        <a href="listas.html">Mis mascotas</a>
-        <a href="regPetAdmin.html">Registrar mascota</a>
-        <a href="horario.html">Horario</a>
-        <a href="prodCatalog.html">Tienda</a>
-        <a href="regUser.html">Usuarios</a>
-      </nav>
-      <div class="header-actions">
-        <button class="btn-primary" onclick="logout()">Salir</button>
-      </div>
+        <a class="brand" href="../initPag.html">🐶 TechSide Vet</a>
+        <nav class="main-nav">
+            <a href="../initPag.html">Inicio</a>
+            <a href="listas.html">Mis Mascotas</a>
+        </nav>
+        <button onclick="logout()" class="btn-danger">Cerrar Sesión</button>
     </div>
-  </header>
-    
-  <div class="container layout" style="display:flex;gap:20px;align-items:flex-start">
-    <aside class="sidebar" style="min-width:220px;max-width:260px">
-      <nav class="sidebar-list">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="pacientes.html">Pacientes</a>
-        <a class="active" href="citas.html">Citas</a>
-        <a href="inventario.html">Inventario</a>
-      </nav>
-    </aside>
+</header>
 
-    <main class="main" style="flex:1">
-      <h1>Citas</h1>
-      <p class="muted">Agenda y gestión de citas.</p>
-
-      <div style="display:flex;gap:12px;margin-top:12px;align-items:flex-start">
-        <div style="flex:1">
-          <div class="calendar">
-            <h3>Reservar cita</h3>
-            <div style="display:flex;gap:8px;margin-bottom:8px">
-              <label style="display:flex;flex-direction:column"><span class="muted">Sucursal</span><select id="branch-select"><option>Cargando...</option></select></label>
-              <label style="display:flex;flex-direction:column"><span class="muted">Doctor</span><select id="doctor-select"></select></label>
-              <label style="display:flex;flex-direction:column"><span class="muted">Especialidad</span><select id="specialty-select"></select></label>
-              <label style="display:flex;flex-direction:column"><span class="muted">Día</span><select id="day-select"></select></label>
-            </div>
-            <div id="slots-list" style="display:flex;flex-direction:column;gap:6px"></div>
-            <div id="booking-panel" style="display:none;border-top:1px solid rgba(0,0,0,0.06);padding-top:8px;margin-top:8px">
-              <h4>Reservar cita</h4>
-              <label style="display:flex;flex-direction:column"><span class="muted">Buscar dueño</span><input id="booking-owner" placeholder="Nombre del cliente..."></label>
-              <label style="display:flex;flex-direction:column"><span class="muted">Procedimiento</span><input id="booking-procedure" placeholder="Descripción del servicio"></label>
-              <div style="display:flex;gap:8px;margin-top:8px">
-                <button id="booking-confirm" class="btn-primary">Agendar</button>
-                <button id="booking-cancel" class="btn-ghost">Cancelar</button>
-              </div>
-            </div>
-          </div>
+<main class="container">
+    <div class="cita-container">
+        <h2 style="text-align: center; margin-bottom: 20px;">Agendar Nueva Cita</h2>
+        
+        <div class="step-wizard">
+            <div class="step-indicator active">1</div>
+            <div class="step-indicator">2</div>
+            <div class="step-indicator">3</div>
         </div>
-        <div style="width:320px">
-          <div class="card" style="padding:12px;border-radius:8px;background:transparent;color:inherit">
-            <h3>Próximas citas</h3>
-            <div id="upcoming-appointments"><p class="muted">Cargando...</p></div>
-          </div>
-        </div>
-      </div>
 
-    </main>
-  </div>
+        <form id="bookingForm">
+            
+            <div class="form-step active" id="step1">
+                <div class="form-group">
+                    <label>¿Quién es el paciente?</label>
+                    <select class="form-control" id="mascota" required>
+                        <option value="">Cargando tus mascotas...</option>
+                    </select>
+                    <small style="display:block; margin-top:5px; color:#666;">
+                        ¿No aparece? <a href="listas.html">Regístrala aquí</a>
+                    </small>
+                </div>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p>© <span id="year"></span> TechSide</p>
-      <small class="muted">Términos y condiciones · Política de privacidad</small>
+                <div class="form-group">
+                    <label>Sucursal</label>
+                    <select class="form-control" id="sucursal" required>
+                        <option value="">Cargando sucursales...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Servicio Requerido</label>
+                    <select class="form-control" id="servicio" required>
+                        <option value="">Cargando servicios...</option>
+                    </select>
+                </div>
+
+                <div class="btn-actions" style="justify-content: flex-end;">
+                    <button type="button" class="btn-next" onclick="nextStep(1)">Siguiente ➝</button>
+                </div>
+            </div>
+
+            <div class="form-step" id="step2">
+                <div class="form-group">
+                    <label>Selecciona un Médico</label>
+                    <select class="form-control" id="medico" disabled required>
+                        <option value="">Primero selecciona sucursal</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de la Cita</label>
+                    <input type="date" class="form-control" id="fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Horarios Disponibles</label>
+                    <p id="loading-hours" style="display:none; color:#666; font-size:0.9rem;">Consultando agenda...</p>
+                    <div class="horas-grid" id="horas-grid">
+                        <p style="color:#888; grid-column: 1/-1;">Selecciona médico y fecha para ver horas.</p>
+                    </div>
+                    <input type="hidden" id="horaSeleccionada" required>
+                </div>
+
+                <div class="btn-actions">
+                    <button type="button" class="btn-prev" onclick="prevStep(2)">← Atrás</button>
+                    <button type="button" class="btn-next" onclick="nextStep(2)">Siguiente ➝</button>
+                </div>
+            </div>
+
+            <div class="form-step" id="step3">
+                <div style="background: #f3f4f6; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="margin-top:0;">Resumen</h3>
+                    <p><strong>Paciente:</strong> <span id="summary-mascota">...</span></p>
+                    <p><strong>Servicio:</strong> <span id="summary-servicio">...</span></p>
+                    <p><strong>Lugar:</strong> <span id="summary-sucursal">...</span></p>
+                    <p><strong>Especialista:</strong> <span id="summary-medico">...</span></p>
+                    <p><strong>Fecha y Hora:</strong> <span id="summary-fecha">...</span> a las <span id="summary-hora">...</span></p>
+                </div>
+
+                <div class="btn-actions">
+                    <button type="button" class="btn-prev" onclick="prevStep(3)">← Atrás</button>
+                    <button type="submit" class="btn-next">Confirmar Cita ✅</button>
+                </div>
+            </div>
+
+        </form>
     </div>
-  </footer>
+</main>
 
-  <script>
-    // --- LÓGICA CONECTADA A BASE DE DATOS ---
-    const API = 'http://localhost:3000/api';
-    const token = localStorage.getItem('token');
+<script>
+    // ============================================
+    // CONFIGURACIÓN Y ESTADO GLOBAL
+    // ============================================
+    const API_URL = 'http://localhost:3000/api/citas'; // Ajusta si tu puerto es diferente
+    let currentStep = 1;
+    let usuarioActual = null;
+
+    // ============================================
+    // 1. CARGA INICIAL (AL ABRIR LA PÁGINA)
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        // A. Verificar Sesión
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            alert("Debes iniciar sesión para agendar.");
+            window.location.href = '../initPag.html';
+            return;
+        }
+        usuarioActual = JSON.parse(userStr);
+
+        // B. Cargar Datos en Paralelo (Mascotas, Sucursales, Servicios)
+        try {
+            const [initDataRes, mascotasRes] = await Promise.all([
+                fetch(`${API_URL}/init-data`),
+                fetch(`${API_URL}/mis-mascotas/${usuarioActual.id}`)
+            ]);
+
+            const initData = await initDataRes.json();
+            const mascotas = await mascotasRes.json();
+
+            // Llenar Select Sucursales
+            const sucSelect = document.getElementById('sucursal');
+            sucSelect.innerHTML = '<option value="">Selecciona...</option>';
+            initData.sucursales.forEach(s => {
+                sucSelect.innerHTML += `<option value="${s.id}">${s.nombre}</option>`;
+            });
+
+            // Llenar Select Servicios
+            const servSelect = document.getElementById('servicio');
+            servSelect.innerHTML = '<option value="">Selecciona...</option>';
+            initData.servicios.forEach(s => {
+                // Guardamos el nombre en un atributo data para el resumen
+                servSelect.innerHTML += `<option value="${s.id}" data-nombre="${s.nombre}">${s.nombre} (${s.duracion_minutos} min) - $${s.precio}</option>`;
+            });
+
+            // Llenar Select Mascotas
+            const mascSelect = document.getElementById('mascota');
+            if (mascotas.length > 0) {
+                mascSelect.innerHTML = '<option value="">Selecciona...</option>';
+                mascotas.forEach(m => {
+                    mascSelect.innerHTML += `<option value="${m.id}" data-nombre="${m.nombre}">${m.nombre}</option>`;
+                });
+            } else {
+                mascSelect.innerHTML = '<option value="">Sin mascotas registradas</option>';
+            }
+
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+            alert("Error conectando con el servidor. Revisa la consola.");
+        }
+    });
+
+    // ============================================
+    // 2. LÓGICA DE INTERACCIÓN
+    // ============================================
     
-    // Headers universales
-    const headers = { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` 
+    // A. Cuando cambia la Sucursal -> Cargar Médicos
+    document.getElementById('sucursal').addEventListener('change', async (e) => {
+        const sucursalId = e.target.value;
+        const medicoSelect = document.getElementById('medico');
+        
+        if(!sucursalId) {
+            medicoSelect.innerHTML = '<option value="">Selecciona sucursal primero</option>';
+            medicoSelect.disabled = true;
+            return;
+        }
+
+        medicoSelect.innerHTML = '<option>Cargando médicos...</option>';
+        try {
+            const res = await fetch(`${API_URL}/medicos/${sucursalId}`);
+            const medicos = await res.json();
+            
+            medicoSelect.innerHTML = '<option value="">Selecciona...</option>';
+            medicos.forEach(m => {
+                medicoSelect.innerHTML += `<option value="${m.id}" data-nombre="${m.nombre_completo}">${m.nombre_completo}</option>`;
+            });
+            medicoSelect.disabled = false;
+        } catch (err) {
+            console.error(err);
+            medicoSelect.innerHTML = '<option>Error al cargar</option>';
+        }
+    });
+
+    // B. Cuando cambia Médico o Fecha -> Cargar Horarios (GRID DINÁMICO)
+    const cargarHorarios = async () => {
+        const medicoId = document.getElementById('medico').value;
+        const fecha = document.getElementById('fecha').value;
+        const grid = document.getElementById('horas-grid');
+        const loader = document.getElementById('loading-hours');
+
+        if(!medicoId || !fecha) return;
+
+        grid.innerHTML = '';
+        loader.style.display = 'block';
+
+        try {
+            const res = await fetch(`${API_URL}/horarios-disponibles?medicoId=${medicoId}&fecha=${fecha}`);
+            const slots = await res.json();
+            
+            loader.style.display = 'none';
+
+            if(slots.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; color:#ef4444;">No hay disponibilidad para esta fecha.</p>';
+                return;
+            }
+
+            // Generar Botones Dinámicamente (Respetando tu diseño)
+            slots.forEach(hora => {
+                const btn = document.createElement('div');
+                btn.className = 'btn-hora';
+                btn.textContent = hora;
+                btn.onclick = () => seleccionarHora(hora, btn);
+                grid.appendChild(btn);
+            });
+
+        } catch (err) {
+            console.error(err);
+            loader.style.display = 'none';
+            grid.innerHTML = '<p>Error cargando horarios.</p>';
+        }
     };
 
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = 'formAgregar.html';
+    document.getElementById('medico').addEventListener('change', cargarHorarios);
+    document.getElementById('fecha').addEventListener('change', cargarHorarios);
+
+    // Selección Visual de Hora
+    function seleccionarHora(hora, elemento) {
+        // Quitar clase active a todos
+        document.querySelectorAll('.btn-hora').forEach(b => b.classList.remove('active'));
+        // Poner clase active al seleccionado
+        elemento.classList.add('active');
+        // Guardar valor en input oculto
+        document.getElementById('horaSeleccionada').value = hora;
     }
 
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    (function(){
-      const branchSelect = document.getElementById('branch-select');
-      const doctorSelect = document.getElementById('doctor-select');
-      const specialtySelect = document.getElementById('specialty-select');
-      const daySelect = document.getElementById('day-select');
-      const slotsList = document.getElementById('slots-list');
-      const upcoming = document.getElementById('upcoming-appointments');
-
-      // Variables globales para datos actuales
-      let currentDoctors = []; 
-
-      // 1. Cargar Sucursales desde BD
-      function loadBranches(){
-        fetch(`${API}/sucursales`, { headers })
-          .then(r => r.json())
-          .then(data => {
-            branchSelect.innerHTML = data.map(b => `<option value="${b.id}">${b.nombre}</option>`).join('');
-            // Disparar carga de doctores de la primera sucursal
-            if(data.length > 0) populateDoctors(); 
-          })
-          .catch(err => console.error('Error sucursales:', err));
-      }
-
-      // 2. Cargar Doctores de la sucursal seleccionada
-      function populateDoctors(){
-        const sucId = branchSelect.value;
-        if(!sucId) return;
-
-        fetch(`${API}/sucursales/${sucId}/medicos`, { headers })
-          .then(r => r.json())
-          .then(doctors => {
-            currentDoctors = doctors; // Guardamos para filtrar especialidades localmente
-            doctorSelect.innerHTML = doctors.map(d => `<option value="${d.id}">${d.name} — ${d.specialty || 'General'}</option>`).join('');
-            populateSpecialties();
-            populateDays(); // Iniciar calendario
-          })
-          .catch(err => console.error('Error doctores:', err));
-      }
-
-      // 3. Llenar especialidades (basado en los doctores cargados)
-      function populateSpecialties(){
-        // Obtenemos especialidades únicas de la lista de doctores actual
-        const specs = [...new Set(currentDoctors.map(d => d.specialty).filter(Boolean))];
-        
-        // Si hay un doctor seleccionado específicamente, forzamos su especialidad
-        const selectedDocId = doctorSelect.value;
-        const selectedDoc = currentDoctors.find(d => d.id == selectedDocId);
-
-        if(selectedDoc && selectedDoc.specialty) {
-           specialtySelect.innerHTML = `<option value="${selectedDoc.specialty}">${selectedDoc.specialty}</option>`;
-           specialtySelect.disabled = true; 
-        } else {
-           specialtySelect.disabled = false;
-           if(specs.length === 0) specialtySelect.innerHTML = '<option value="">—</option>';
-           else specialtySelect.innerHTML = specs.map(s => `<option value="${s}">${s}</option>`).join('');
+    // ============================================
+    // 3. WIZARD Y ENVÍO (Resumen)
+    // ============================================
+    
+    function nextStep(step) {
+        // Validaciones simples antes de avanzar
+        if (step === 1) {
+            if (!document.getElementById('mascota').value || 
+                !document.getElementById('sucursal').value || 
+                !document.getElementById('servicio').value) {
+                alert("Por favor completa todos los campos.");
+                return;
+            }
         }
-        renderSlots(); // Actualizar slots al cambiar doctor
-      }
-
-      // 4. Llenar días (Próximos 7 días)
-      function populateDays(){
-        daySelect.innerHTML='';
-        const today = new Date();
-        for(let i=0;i<7;i++){ 
-            const d=new Date(today.getFullYear(), today.getMonth(), today.getDate()+i); 
-            // Formato YYYY-MM-DD para el value
-            const val = d.toISOString().slice(0,10);
-            daySelect.innerHTML += `<option value="${val}">${d.toLocaleDateString()}</option>` 
+        if (step === 2) {
+            if (!document.getElementById('medico').value || 
+                !document.getElementById('fecha').value || 
+                !document.getElementById('horaSeleccionada').value) {
+                alert("Debes seleccionar médico, fecha y una hora disponible.");
+                return;
+            }
+            actualizarResumen();
         }
-        renderSlots();
-      }
 
-      // 5. Renderizar Slots (Consultando disponibilidad en BD)
-      function renderSlots(){
-        slotsList.innerHTML = '<p class="muted">Cargando disponibilidad...</p>';
-        const date = daySelect.value;
-        const docId = doctorSelect.value;
-        const sucId = branchSelect.value;
-
-        if(!docId) { slotsList.innerHTML = ''; return; }
-
-        // Consultar horas ocupadas al backend
-        fetch(`${API}/citas/ocupadas?fecha=${date}&medicoId=${docId}&sucursalId=${sucId}`, { headers })
-          .then(r => r.json())
-          .then(ocupadas => {
-             // ocupadas es array tipo ['09:00', '14:00']
-             slotsList.innerHTML = '';
-             // Generar horario 9 a 17
-             for(let h=9; h<=17; h++){
-                const time = (h<10? '0'+h : ''+h) + ':00';
-                const isTaken = ocupadas.includes(time);
-                
-                const btn = document.createElement('button');
-                // Usamos tus clases originales
-                btn.className = isTaken ? 'btn-ghost' : 'btn-primary'; 
-                btn.textContent = time + (isTaken ? ' — Ocupado' : ' — Reservar');
-                btn.disabled = isTaken;
-                
-                if(!isTaken){
-                    btn.addEventListener('click', ()=>openBookingPanel(date, time));
-                }
-                slotsList.appendChild(btn);
-             }
-          })
-          .catch(e => slotsList.innerHTML = '<p class="error">Error de conexión</p>');
-      }
-
-      // 6. Abrir Panel (Igual que antes, solo visual)
-      function openBookingPanel(date, time){
-        const panel = document.getElementById('booking-panel');
-        panel.dataset.date = date; 
-        panel.dataset.time = time; 
-        panel.style.display = 'block';
-        document.getElementById('booking-owner').focus();
-      }
-
-      // 7. Confirmar Cita (Guardar en BD)
-      document.getElementById('booking-confirm').addEventListener('click', ()=>{
-        const owner = document.getElementById('booking-owner').value.trim();
-        const procedure = document.getElementById('booking-procedure').value.trim();
-        if(!owner){ alert('Ingresa el nombre del dueño.'); return; }
+        // Animación de cambio de paso
+        document.querySelector(`#step${step}`).classList.remove('active');
+        document.querySelector(`#step${step+1}`).classList.add('active');
         
-        const panel = document.getElementById('booking-panel');
+        // Actualizar bolitas
+        const indicators = document.querySelectorAll('.step-indicator');
+        indicators[step].classList.add('active');
+        indicators[step-1].classList.add('completed', 'active'); // Mantener anterior coloreado
+        currentStep++;
+    }
+
+    function prevStep(step) {
+        document.querySelector(`#step${step}`).classList.remove('active');
+        document.querySelector(`#step${step-1}`).classList.add('active');
         
-        const payload = {
-            sucursal: branchSelect.value,
-            doctor: doctorSelect.value,
-            date: panel.dataset.date,
-            time: panel.dataset.time,
-            owner: owner,
-            procedure: procedure
+        const indicators = document.querySelectorAll('.step-indicator');
+        indicators[step-1].classList.remove('active');
+        currentStep--;
+    }
+
+    function actualizarResumen() {
+        // Obtener textos de los selects (no los IDs)
+        const mascSelect = document.getElementById('mascota');
+        const servSelect = document.getElementById('servicio');
+        const sucSelect = document.getElementById('sucursal');
+        const medSelect = document.getElementById('medico');
+
+        document.getElementById('summary-mascota').textContent = mascSelect.options[mascSelect.selectedIndex].text;
+        document.getElementById('summary-servicio').textContent = servSelect.options[servSelect.selectedIndex].getAttribute('data-nombre'); // Usamos data attribute para nombre limpio
+        document.getElementById('summary-sucursal').textContent = sucSelect.options[sucSelect.selectedIndex].text;
+        document.getElementById('summary-medico').textContent = medSelect.options[medSelect.selectedIndex].getAttribute('data-nombre');
+        
+        document.getElementById('summary-fecha').textContent = document.getElementById('fecha').value;
+        document.getElementById('summary-hora').textContent = document.getElementById('horaSeleccionada').value;
+    }
+
+    // ============================================
+    // 4. ENVÍO FINAL AL BACKEND
+    // ============================================
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const datosCita = {
+            mascota_id: document.getElementById('mascota').value,
+            sucursal_id: document.getElementById('sucursal').value,
+            servicio_id: document.getElementById('servicio').value,
+            medico_id: document.getElementById('medico').value,
+            fecha: document.getElementById('fecha').value,
+            hora_inicio: document.getElementById('horaSeleccionada').value
         };
 
-        fetch(`${API}/citas`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(payload)
-        })
-        .then(async r => {
-            if(r.ok) {
-                alert('¡Cita agendada exitosamente!');
-                panel.style.display='none';
-                document.getElementById('booking-owner').value = '';
-                document.getElementById('booking-procedure').value = '';
-                renderSlots(); // Recargar para ver el nuevo bloqueo
+        try {
+            const response = await fetch(`${API_URL}/agendar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosCita)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(`¡Cita agendada con éxito!\nID de confirmación: ${result.citaId}`);
+                window.location.href = '../initPag.html'; // Redirigir al inicio o perfil
             } else {
-                const err = await r.json();
-                alert('Error: ' + err.message);
+                alert("Error: " + (result.error || "No se pudo agendar"));
             }
-        })
-        .catch(e => alert('Error de red'));
-      });
+        } catch (error) {
+            console.error(error);
+            alert("Error de conexión al guardar la cita.");
+        }
+    });
+</script>
 
-      document.getElementById('booking-cancel').addEventListener('click', ()=>{ 
-        document.getElementById('booking-panel').style.display='none'; 
-      });
-
-      // Event Listeners
-      branchSelect.addEventListener('change', populateDoctors);
-      doctorSelect.addEventListener('change', ()=>{ populateSpecialties(); }); 
-      // Si cambias especialidad, no filtramos doctores por simplicidad, solo recargamos slots
-      specialtySelect.addEventListener('change', renderSlots);
-      daySelect.addEventListener('change', renderSlots);
-
-      // Iniciar
-      loadBranches();
-      
-    })();
-  </script>
 </body>
 </html>
