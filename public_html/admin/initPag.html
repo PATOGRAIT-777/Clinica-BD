@@ -225,9 +225,9 @@ function closeOnOutsideClick(event) {
                     setTimeout(() => {
                         closeLogin();
                         if(data.user.rol === 'admin') {
-                            window.location.href = 'html/dashboard.html'; 
+                            window.location.href = '../admin/dashboard.html'; 
                         } else {
-                            window.location.reload(); 
+                            window.location.href = '../admin/regUser.html'; 
                         }
                     }, 1500);
 
