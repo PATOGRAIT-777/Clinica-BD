@@ -20,6 +20,7 @@
         <button class="btn-primary" onclick="openLogin()">Entrar</button>
       </div>
     </div>
+      <script src="../js/session.js"></script>
   </header>
 
   <main class="container" style="padding:20px;max-width:900p*x">
@@ -73,9 +74,6 @@
     document.getElementById('clear-cart').addEventListener('click', ()=>{ localStorage.removeItem('cart'); renderCart(); });
     document.getElementById('checkout').addEventListener('click', ()=>{ alert('Checkout simulado. Implementar integración con BD/servicio.'); localStorage.removeItem('cart'); renderCart(); });
     renderCart();
-</body>
-</html>
   </script>
-  <script src="../js/session.js"></script>
 </body>
 </html>

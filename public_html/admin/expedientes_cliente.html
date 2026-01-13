@@ -15,6 +15,7 @@
     .btn-link{background:transparent;border:none;color:var(--primary,#16a34a);cursor:pointer;padding:0}
     @media(max-width:800px){.grid-2{grid-template-columns:1fr}}
   </style>
+  <script src="../js/session.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -99,7 +100,7 @@
   <script> document.getElementById('year').textContent = new Date().getFullYear();</script>
 
   <script>
-<script src="../js/session.js"></script>
+
     // cart count
     function getCart(){ return JSON.parse(localStorage.getItem('cart')||'[]'); }
     function updateCartCount(){ document.getElementById('cart-count').textContent = getCart().reduce((s,i)=>s+i.qty,0); }
