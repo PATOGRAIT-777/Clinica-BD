@@ -36,18 +36,33 @@ const safeRequire = (relPath) => {
 
 // CORRECCIÓN: Usar ./ porque 'routes' está JUNTO a 'index.js' dentro de 'src'
 const authRoutes = safeRequire('./routes/auth');
+// Fíjate si tu variable se llama 'sucursalRoutes' o 'sucursalesRoutes'
 const sucursalRoutes = safeRequire('./routes/sucursales');
 const mascotaRoutes = safeRequire('./routes/mascotas');
-const citaRoutes = safeRequire('./routes/citas');
+const citaRoutes = require('./routes/citas'); // (O safeRequire, lo que uses)
 const visitaRoutes = safeRequire('./routes/visitas');
 const razaRoutes = safeRequire('./routes/razas');
-// ... (código anterior: imports) ...
 const mxDivisionsRoutes = require('./routes/mxDivisions');
 const uploadRoutes = safeRequire('./routes/upload');
 
 
 // 6. Definición de Rutas
 const mountedRoutes = [];
+
+// ... otros app.use ...
+
+// --- AGREGA ESTO ---
+if (sucursalRoutes) {
+    app.use('/api/sucursales', sucursalRoutes);
+    mountedRoutes.push('/api/sucursales');
+    console.log('✅ Ruta de Sucursales montada en /api/sucursales'); // Log para confirmar
+}
+// -------------------
+if (citaRoutes) {
+    app.use('/api/citas', citaRoutes); // <--- ESTA LÍNEA ES VITAL
+    mountedRoutes.push('/api/citas');
+}
+// ...
 
 // --- AGREGA ESTE BLOQUE AQUÍ ---
 

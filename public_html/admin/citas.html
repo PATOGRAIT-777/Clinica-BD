@@ -15,6 +15,12 @@
   </style>
 </head>
 <body>
+  <script>
+    if (!localStorage.getItem('token')) {
+      window.location.href = 'formAgregar.html';
+    }
+  </script>
+
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="../initPag.html">🐶 TechSide Vet</a>
@@ -24,15 +30,14 @@
         <a class="active" href="citas.html">Citas</a>
         <a href="inventario.html">Inventario</a>
         <a href="ordenes.html">Órdenes</a>
-          <a href="listas.html">Mis mascotas</a>
-          <a href="regPetAdmin.html">Registrar mascota</a>
-          <a href="horario.html">Horario</a>
-          <a href="prodCatalog.html">Tienda</a>
-          <a href="regUser.html">Usuarios</a>
+        <a href="listas.html">Mis mascotas</a>
+        <a href="regPetAdmin.html">Registrar mascota</a>
+        <a href="horario.html">Horario</a>
+        <a href="prodCatalog.html">Tienda</a>
+        <a href="regUser.html">Usuarios</a>
       </nav>
       <div class="header-actions">
-        <button class="btn-ghost"><a href="formAgregar.html">Registrarse</a></button>
-        <button class="btn-primary" onclick="openLogin()">Entrar</button>
+        <button class="btn-primary" onclick="logout()">Salir</button>
       </div>
     </div>
   </header>
@@ -56,16 +61,15 @@
           <div class="calendar">
             <h3>Reservar cita</h3>
             <div style="display:flex;gap:8px;margin-bottom:8px">
-              <label style="display:flex;flex-direction:column"><span class="muted">Sucursal</span><select id="branch-select"></select></label>
+              <label style="display:flex;flex-direction:column"><span class="muted">Sucursal</span><select id="branch-select"><option>Cargando...</option></select></label>
               <label style="display:flex;flex-direction:column"><span class="muted">Doctor</span><select id="doctor-select"></select></label>
               <label style="display:flex;flex-direction:column"><span class="muted">Especialidad</span><select id="specialty-select"></select></label>
               <label style="display:flex;flex-direction:column"><span class="muted">Día</span><select id="day-select"></select></label>
             </div>
             <div id="slots-list" style="display:flex;flex-direction:column;gap:6px"></div>
-            <!-- booking panel -->
             <div id="booking-panel" style="display:none;border-top:1px solid rgba(0,0,0,0.06);padding-top:8px;margin-top:8px">
               <h4>Reservar cita</h4>
-              <label style="display:flex;flex-direction:column"><span class="muted">Buscar dueño</span><input id="booking-owner" list="owners-list" placeholder="Escribe para buscar..."><datalist id="owners-list"></datalist></label>
+              <label style="display:flex;flex-direction:column"><span class="muted">Buscar dueño</span><input id="booking-owner" placeholder="Nombre del cliente..."></label>
               <label style="display:flex;flex-direction:column"><span class="muted">Procedimiento</span><input id="booking-procedure" placeholder="Descripción del servicio"></label>
               <div style="display:flex;gap:8px;margin-top:8px">
                 <button id="booking-confirm" class="btn-primary">Agendar</button>
@@ -92,25 +96,24 @@
     </div>
   </footer>
 
-  <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
-    <div class="login-content">
-      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
-      <form class="login-form">
-        <h2>Ingresar</h2>
-        <input type="text" placeholder="Usuario" required>
-        <input type="password" placeholder="Contraseña" required>
-        <button class="btn-primary">Entrar</button>
-      </form>
-    </div>
-  </div>
+  <script>
+    // --- LÓGICA CONECTADA A BASE DE DATOS ---
+    const API = 'http://localhost:3000/api';
+    const token = localStorage.getItem('token');
+    
+    // Headers universales
+    const headers = { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` 
+    };
 
-    <script>
-    function openLogin() { document.getElementById('login-modal').style.display = 'flex'; }
-    function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    function closeOnOutsideClick(event) { const modal = document.getElementById('login-modal'); if (modal && !modal.querySelector('.login-content').contains(event.target)) closeLogin(); }
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'formAgregar.html';
+    }
+
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Load branches and show available slots; appointments in localStorage
     (function(){
       const branchSelect = document.getElementById('branch-select');
       const doctorSelect = document.getElementById('doctor-select');
@@ -118,143 +121,167 @@
       const daySelect = document.getElementById('day-select');
       const slotsList = document.getElementById('slots-list');
       const upcoming = document.getElementById('upcoming-appointments');
-      let branches = [];
 
+      // Variables globales para datos actuales
+      let currentDoctors = []; 
+
+      // 1. Cargar Sucursales desde BD
       function loadBranches(){
-        fetch('branches.json').then(r=>r.json()).then(j=>{
-          branches = j.branches || [];
-          branchSelect.innerHTML = branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
-          branchSelect.dispatchEvent(new Event('change'));
-          renderUpcoming();
-        }).catch(err=>{ console.error(err); upcoming.innerHTML='<p class="muted">No se pudieron cargar sucursales.</p>'; });
+        fetch(`${API}/sucursales`, { headers })
+          .then(r => r.json())
+          .then(data => {
+            branchSelect.innerHTML = data.map(b => `<option value="${b.id}">${b.nombre}</option>`).join('');
+            // Disparar carga de doctores de la primera sucursal
+            if(data.length > 0) populateDoctors(); 
+          })
+          .catch(err => console.error('Error sucursales:', err));
       }
 
+      // 2. Cargar Doctores de la sucursal seleccionada
       function populateDoctors(){
-        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
-        doctorSelect.innerHTML = (b.doctors||[]).map(d=>`<option value="${d.id}">${d.name} — ${d.specialty}</option>`).join('');
-        populateSpecialties();
-        populateDays();
+        const sucId = branchSelect.value;
+        if(!sucId) return;
+
+        fetch(`${API}/sucursales/${sucId}/medicos`, { headers })
+          .then(r => r.json())
+          .then(doctors => {
+            currentDoctors = doctors; // Guardamos para filtrar especialidades localmente
+            doctorSelect.innerHTML = doctors.map(d => `<option value="${d.id}">${d.name} — ${d.specialty || 'General'}</option>`).join('');
+            populateSpecialties();
+            populateDays(); // Iniciar calendario
+          })
+          .catch(err => console.error('Error doctores:', err));
       }
 
+      // 3. Llenar especialidades (basado en los doctores cargados)
       function populateSpecialties(){
-        const b = branches.find(x=>x.id===branchSelect.value) || branches[0] || {doctors:[]};
-        // gather unique specialties available in this branch
-        const specs = Array.from(new Set((b.doctors||[]).map(d=>d.specialty).filter(Boolean)));
-        // if a doctor is selected, prefer that doctor's specialty and make select readonly-like
-        const selectedDoctor = (b.doctors||[]).find(d=>String(d.id)===String(doctorSelect.value));
-        if(selectedDoctor){
-          specialtySelect.innerHTML = `<option value="${selectedDoctor.specialty}">${selectedDoctor.specialty}</option>`;
-          specialtySelect.disabled = true;
+        // Obtenemos especialidades únicas de la lista de doctores actual
+        const specs = [...new Set(currentDoctors.map(d => d.specialty).filter(Boolean))];
+        
+        // Si hay un doctor seleccionado específicamente, forzamos su especialidad
+        const selectedDocId = doctorSelect.value;
+        const selectedDoc = currentDoctors.find(d => d.id == selectedDocId);
+
+        if(selectedDoc && selectedDoc.specialty) {
+           specialtySelect.innerHTML = `<option value="${selectedDoc.specialty}">${selectedDoc.specialty}</option>`;
+           specialtySelect.disabled = true; 
         } else {
-          specialtySelect.disabled = false;
-          if(specs.length===0){ specialtySelect.innerHTML = '<option value="">—</option>'; }
-          else { specialtySelect.innerHTML = specs.map(s=>`<option value="${s}">${s}</option>`).join(''); }
+           specialtySelect.disabled = false;
+           if(specs.length === 0) specialtySelect.innerHTML = '<option value="">—</option>';
+           else specialtySelect.innerHTML = specs.map(s => `<option value="${s}">${s}</option>`).join('');
         }
+        renderSlots(); // Actualizar slots al cambiar doctor
       }
 
+      // 4. Llenar días (Próximos 7 días)
       function populateDays(){
         daySelect.innerHTML='';
         const today = new Date();
-        for(let i=0;i<7;i++){ const d=new Date(today.getFullYear(), today.getMonth(), today.getDate()+i); daySelect.innerHTML += `<option value="${d.toISOString().slice(0,10)}">${d.toLocaleDateString()}</option>` }
-        daySelect.dispatchEvent(new Event('change'));
+        for(let i=0;i<7;i++){ 
+            const d=new Date(today.getFullYear(), today.getMonth(), today.getDate()+i); 
+            // Formato YYYY-MM-DD para el value
+            const val = d.toISOString().slice(0,10);
+            daySelect.innerHTML += `<option value="${val}">${d.toLocaleDateString()}</option>` 
+        }
+        renderSlots();
       }
 
-      function loadOwnersSuggestions(){
-        fetch('owners.json').then(r=>r.json()).then(list=>{ const dl = document.getElementById('owners-list'); dl.innerHTML=''; (list||[]).forEach(o=>{ const opt = document.createElement('option'); opt.value = o.name; dl.appendChild(opt); }); }).catch(()=>{/* ignore */});
-      }
-
+      // 5. Renderizar Slots (Consultando disponibilidad en BD)
       function renderSlots(){
-        slotsList.innerHTML='';
+        slotsList.innerHTML = '<p class="muted">Cargando disponibilidad...</p>';
         const date = daySelect.value;
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        // basic slots 09:00-17:00
-        for(let h=9; h<=17; h++){
-          const time = (h<10? '0'+h : ''+h) + ':00';
-          const taken = appointments.find(a=>a.date===date && a.time===time && a.branch===branchSelect.value && a.doctor===doctorSelect.value);
-          const btn = document.createElement('button'); btn.className = taken? 'btn-ghost' : 'btn-primary'; btn.textContent = time + (taken? ' — Ocupado':' — Reservar');
-          btn.disabled = !!taken;
-          btn.addEventListener('click', ()=>openBookingPanel(date, time));
-          slotsList.appendChild(btn);
-        }
-        // If page opened with a pet hash, auto-open first available slot
-        try{
-          const panel = document.getElementById('booking-panel');
-          const petId = panel && panel.dataset && panel.dataset.petId;
-          if(petId){
-            // find first non-disabled slot button
-            const firstAvailable = Array.from(slotsList.querySelectorAll('button')).find(b=>!b.disabled);
-            if(firstAvailable){
-              // trigger click to open booking panel for that slot
-              firstAvailable.click();
-            }
-          }
-        }catch(e){/* ignore */}
+        const docId = doctorSelect.value;
+        const sucId = branchSelect.value;
+
+        if(!docId) { slotsList.innerHTML = ''; return; }
+
+        // Consultar horas ocupadas al backend
+        fetch(`${API}/citas/ocupadas?fecha=${date}&medicoId=${docId}&sucursalId=${sucId}`, { headers })
+          .then(r => r.json())
+          .then(ocupadas => {
+             // ocupadas es array tipo ['09:00', '14:00']
+             slotsList.innerHTML = '';
+             // Generar horario 9 a 17
+             for(let h=9; h<=17; h++){
+                const time = (h<10? '0'+h : ''+h) + ':00';
+                const isTaken = ocupadas.includes(time);
+                
+                const btn = document.createElement('button');
+                // Usamos tus clases originales
+                btn.className = isTaken ? 'btn-ghost' : 'btn-primary'; 
+                btn.textContent = time + (isTaken ? ' — Ocupado' : ' — Reservar');
+                btn.disabled = isTaken;
+                
+                if(!isTaken){
+                    btn.addEventListener('click', ()=>openBookingPanel(date, time));
+                }
+                slotsList.appendChild(btn);
+             }
+          })
+          .catch(e => slotsList.innerHTML = '<p class="error">Error de conexión</p>');
       }
 
+      // 6. Abrir Panel (Igual que antes, solo visual)
       function openBookingPanel(date, time){
-        loadOwnersSuggestions();
-        const panel = document.getElementById('booking-panel'); panel.dataset.date = date; panel.dataset.time = time; panel.style.display = 'block';
-        // if a pet was passed via hash, prefill owner
-        const petId = panel.dataset.petId || document.getElementById('pet-view')?.dataset?.petId || null;
-        if(petId){
-          const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-          const pet = pets.find(x=>String(x.id)===String(petId));
-          if(pet){
-            const ownerInput = document.getElementById('booking-owner');
-            ownerInput.value = pet.owner || pet.ownerName || pet.name || ownerInput.value;
-          }
-        }
-        // focus owner input
+        const panel = document.getElementById('booking-panel');
+        panel.dataset.date = date; 
+        panel.dataset.time = time; 
+        panel.style.display = 'block';
         document.getElementById('booking-owner').focus();
       }
 
-      document.getElementById('booking-cancel').addEventListener('click', ()=>{ document.getElementById('booking-panel').style.display='none'; });
+      // 7. Confirmar Cita (Guardar en BD)
       document.getElementById('booking-confirm').addEventListener('click', ()=>{
         const owner = document.getElementById('booking-owner').value.trim();
         const procedure = document.getElementById('booking-procedure').value.trim();
-        if(!owner){ alert('Ingresa o selecciona el dueño.'); return; }
-        const panel = document.getElementById('booking-panel'); const date = panel.dataset.date; const time = panel.dataset.time;
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        const petIdForAppointment = panel.dataset.petId || null;
-        const appt = {id:Date.now(), owner, branch:branchSelect.value, doctor:doctorSelect.value, date, time, procedure};
-        if(petIdForAppointment) appt.petId = petIdForAppointment;
-        appointments.push(appt);
-        localStorage.setItem('appointments', JSON.stringify(appointments));
-        panel.style.display='none'; renderSlots(); renderUpcoming(); alert('Cita agendada');
+        if(!owner){ alert('Ingresa el nombre del dueño.'); return; }
+        
+        const panel = document.getElementById('booking-panel');
+        
+        const payload = {
+            sucursal: branchSelect.value,
+            doctor: doctorSelect.value,
+            date: panel.dataset.date,
+            time: panel.dataset.time,
+            owner: owner,
+            procedure: procedure
+        };
+
+        fetch(`${API}/citas`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        })
+        .then(async r => {
+            if(r.ok) {
+                alert('¡Cita agendada exitosamente!');
+                panel.style.display='none';
+                document.getElementById('booking-owner').value = '';
+                document.getElementById('booking-procedure').value = '';
+                renderSlots(); // Recargar para ver el nuevo bloqueo
+            } else {
+                const err = await r.json();
+                alert('Error: ' + err.message);
+            }
+        })
+        .catch(e => alert('Error de red'));
       });
 
-      function renderUpcoming(){
-        const appointments = JSON.parse(localStorage.getItem('appointments')||'[]');
-        if(!appointments.length){ upcoming.innerHTML='<p class="muted">No hay citas próximas.</p>'; return; }
-        const list = document.createElement('ul');
-        appointments.slice(-10).reverse().forEach(a=>{
-          const b = branches.find(x=>x.id===a.branch); const doc = (b && b.doctors)? b.doctors.find(d=>d.id===a.doctor) : null;
-          const li = document.createElement('li'); li.textContent = `${a.date} ${a.time} — ${a.owner} — ${b?b.name:'-'} / ${doc?doc.name:'-'}`;
-          list.appendChild(li);
-        });
-        upcoming.innerHTML=''; upcoming.appendChild(list);
-      }
+      document.getElementById('booking-cancel').addEventListener('click', ()=>{ 
+        document.getElementById('booking-panel').style.display='none'; 
+      });
 
+      // Event Listeners
       branchSelect.addEventListener('change', populateDoctors);
-      doctorSelect.addEventListener('change', ()=>{ populateSpecialties(); renderSlots(); });
+      doctorSelect.addEventListener('change', ()=>{ populateSpecialties(); }); 
+      // Si cambias especialidad, no filtramos doctores por simplicidad, solo recargamos slots
       specialtySelect.addEventListener('change', renderSlots);
       daySelect.addEventListener('change', renderSlots);
 
+      // Iniciar
       loadBranches();
-      // If page was opened with a pet anchor like #pet-123, prefill booking owner when user opens a slot
-      function prefillFromHash(){
-        const m = location.hash.match(/#pet-(\d+)/);
-        if(!m) return;
-        const petId = m[1];
-        // store petId on booking panel so openBookingPanel will use it
-        const panel = document.getElementById('booking-panel'); if(panel) panel.dataset.petId = petId;
-        // try to prefill owner input now (if panel visible) or leave for openBookingPanel
-        const pets = window.__pets_cache || JSON.parse(localStorage.getItem('pets_cache')||'[]');
-        const pet = pets.find(x=>String(x.id)===String(petId));
-        if(pet){ const ownerInput = document.getElementById('booking-owner'); if(ownerInput) ownerInput.value = pet.owner || pet.ownerName || pet.name || ownerInput.value; }
-      }
-      prefillFromHash();
+      
     })();
-    </script>
+  </script>
 </body>
 </html>

@@ -75,6 +75,12 @@ CREATE TABLE servicios (
   precio_base numeric DEFAULT 0
 );
 
+CREATE TABLE categorias_producto (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nombre text UNIQUE NOT NULL, -- Ej: 'Alimento', 'Farmacia', 'Accesorios', 'Higiene'
+  descripcion text
+);
+
 -- [NUEVO] Catálogo de Direcciones (SEPOMEX)
 -- Aquí cargarás tu JSON de estados/municipios para no duplicar textos
 CREATE TABLE mx_divisiones (
@@ -240,19 +246,67 @@ CREATE TABLE visitas (
 );
 
 -- =================================================================
--- 8. PRODUCTOS SIMPLES
+-- 8. TIENDA DE PRODUCTOS
 -- =================================================================
 
 CREATE TABLE productos (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  codigo_sku text UNIQUE, -- Indispensable para lector de código de barras
   nombre text NOT NULL,
   descripcion text,
-  precio numeric NOT NULL,
-  categoria text,
-  stock integer DEFAULT 0,
-  imagen_url text
+  precio_venta numeric NOT NULL, -- Precio al público
+  costo_compra numeric,          -- Para saber cuánto ganas (utilidad)
+  
+  -- Clasificación
+  categoria_id uuid REFERENCES categorias_producto(id),
+  es_medicamento boolean DEFAULT false,
+  requiere_receta boolean DEFAULT false, -- Para validación en farmacia.html
+  
+  -- Visuales
+  imagen_url text,
+  marca text,
+  
+  activo boolean DEFAULT true
 );
 
+CREATE TABLE inventario_sucursal (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  sucursal_id uuid REFERENCES sucursales(id),
+  producto_id uuid REFERENCES productos(id),
+  
+  cantidad_existencia integer DEFAULT 0,
+  stock_minimo integer DEFAULT 5, -- Para alertas de "Se está acabando"
+  ubicacion_en_almacen text,      -- Ej: "Estante A, Repisa 3"
+  
+  fecha_actualizacion timestamptz DEFAULT now(),
+  
+  -- Evitar duplicados: Un producto solo aparece una vez por sucursal
+  CONSTRAINT unico_producto_sucursal UNIQUE(sucursal_id, producto_id)
+);
+
+-- Cabecera de la Orden (El ticket general)
+CREATE TABLE ordenes (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  usuario_id uuid REFERENCES usuarios(id),
+  sucursal_id uuid REFERENCES sucursales(id), -- Sucursal que surte
+  
+  fecha_compra timestamptz DEFAULT now(),
+  total numeric NOT NULL,
+  
+  estado text CHECK (estado IN ('pendiente_pago', 'pagado', 'en_preparacion', 'enviado', 'entregado', 'cancelado', 'devolucion')),
+  metodo_pago text,
+  
+  -- AQUÍ: Guardamos toda la dirección mezclada en un solo texto
+  direccion_envio text NOT NULL
+);
+
+CREATE TABLE detalles_orden (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  orden_id uuid REFERENCES ordenes(id) ON DELETE CASCADE,
+  producto_id uuid REFERENCES productos(id),
+  cantidad integer NOT NULL,
+  precio_unitario numeric NOT NULL
+);
 -- =================================================================
 -- 9. Contactos de Emergencia / Adicionales
 -- =================================================================
@@ -267,3 +321,32 @@ CREATE TABLE contactos_usuarios (
 
 -- Índice para buscar rápidamente los contactos de un usuario
 CREATE INDEX idx_contactos_usuario ON contactos_usuarios(usuario_id);
+
+-- =================================================================
+-- 10. Gestion Medicos.
+-- =================================================================
+CREATE TABLE medico_horarios (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  medico_id uuid REFERENCES medicos(id) ON DELETE CASCADE,
+  dia_semana int CHECK (dia_semana BETWEEN 0 AND 6), -- 0=Domingo, 1=Lunes...
+  hora_inicio time NOT NULL,
+  hora_fin time NOT NULL,
+  
+  -- Para evitar que un médico tenga horarios encimados el mismo día
+  CONSTRAINT horario_unico_medico UNIQUE(medico_id, dia_semana, hora_inicio)
+);
+
+CREATE TABLE medico_asistencias (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  medico_id uuid REFERENCES medicos(id) ON DELETE CASCADE,
+  fecha date NOT NULL,
+  
+  -- Para comparar con su horario teórico
+  hora_entrada_real time,
+  hora_salida_real time,
+  
+  estado text CHECK (estado IN ('Asistencia', 'Falta', 'Retardo', 'Justificado', 'Incapacidad')),
+  observaciones text,
+  
+  creado_en timestamptz DEFAULT now()
+);
