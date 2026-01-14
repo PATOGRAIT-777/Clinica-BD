@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../database'); // Ajusta la ruta si tu database.js está en otra carpeta
+const pool = require('../config/database'); // Ajusta la ruta si tu database.js está en otra carpeta
 
 // 1. OBTENER DATOS INICIALES (Sucursales y Servicios)
 router.get('/init-data', async (req, res) => {

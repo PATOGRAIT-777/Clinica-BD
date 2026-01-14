@@ -11,20 +11,20 @@
 
     <div id="login-modal" class="login-modal" onclick="closeOnOutsideClick(event)">
       <div class="login-content">
-        <span class="close" onclick="closeLogin()">&times;</span>
-        <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
-        
-        <form class="login-form" id="loginForm">
-        <h2>Ingresar</h2>
-        
-        <div id="loginMessage" style="margin-bottom: 15px; min-height: 20px; font-size: 0.9rem; text-align: center; font-weight: bold;"></div>
+  <span class="close" onclick="closeLogin()">&times;</span>
+  <img src="https://cdn.animeav1.com/backdrops/2067.jpg" alt="Banner Login" class="login-banner">
+  
+  <form class="login-form" action="#login">
+    <h2>Ingresar</h2>
+    
+    <div id="login-message" style="margin-bottom: 15px; font-weight: bold; display:none;"></div>
 
-        <input type="text" id="email" name="email" placeholder="Correo Electrónico" required>
-        <input type="password" id="password" name="password" placeholder="Contraseña" required>
-        
-        <button type="submit" class="btn-primary">Entrar</button>
-      </form>
-      </div>
+    <input type="text" name="email" placeholder="Correo Electrónico" required>
+    <input type="password" name="password" placeholder="Contraseña" required>
+    
+    <button type="submit" class="btn-primary">Entrar</button>
+  </form>
+</div>
     </div>
 
     <script> 
@@ -176,75 +176,19 @@ function closeOnOutsideClick(event) {
   </footer>
 
   <script>
-    // --- LÓGICA VISUAL ---
+    // Mantén solo la lógica visual aquí
     function openLogin() { 
         document.getElementById('login-modal').style.display = 'flex'; 
-        // Limpiar mensajes anteriores al abrir
-        const msg = document.getElementById('loginMessage');
+        const msg = document.getElementById('login-message');
         if(msg) msg.textContent = '';
     }
     function closeLogin() { document.getElementById('login-modal').style.display = 'none'; }
-    
     const yearSpan = document.getElementById('year');
     if(yearSpan) yearSpan.textContent = new Date().getFullYear();
-
-    // --- LÓGICA DE LOGIN (AUTO) ---
-    const loginForm = document.getElementById('loginForm');
-    const msgDiv = document.getElementById('loginMessage'); // Referencia al div de mensajes
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            
-            // Feedback visual inmediato (Cargando...)
-            msgDiv.style.color = '#666';
-            msgDiv.textContent = 'Verificando...';
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                // RECUERDA: Cambia 3000 por el puerto que diga tu consola de Node
-                const response = await fetch('http://localhost:3000/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // --- ÉXITO ---
-                    msgDiv.style.color = 'green';
-                    msgDiv.textContent = '¡Bienvenido! Entrando...'; // Mensaje en el div
-                    
-                    // Guardar sesión
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    // Esperar 1.5 segundos y continuar automático
-                    setTimeout(() => {
-                        closeLogin();
-                        if(data.user.rol === 'admin') {
-                            window.location.href = '../admin/dashboard.html'; 
-                        } else {
-                            window.location.href = '../admin/regUser.html'; 
-                        }
-                    }, 1500);
-
-                } else {
-                    // --- ERROR DE DATOS ---
-                    msgDiv.style.color = 'red';
-                    msgDiv.textContent = data.message || 'Correo o contraseña incorrectos';
-                }
-            } catch (error) {
-                // --- ERROR DE CONEXIÓN ---
-                console.error(error);
-                msgDiv.style.color = 'red';
-                msgDiv.textContent = 'Error: No se pudo conectar con el servidor.';
-            }
-        });
-    }
   </script>
+  
+  <script src="../js/session.js"></script>
+  <script src="../js/authLogic.js"></script>
 </body>
 </html>
 <script src="../js/session.js"></script>

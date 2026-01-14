@@ -101,9 +101,9 @@
 
 <header class="site-header">
     <div class="container header-inner">
-        <a class="brand" href="../initPag.html">🐶 TechSide Vet</a>
+        <a class="brand" href="../admin/initPag.html">🐶 TechSide Vet</a>
         <nav class="main-nav">
-            <a href="../initPag.html">Inicio</a>
+            <a href="../admin/initPag.html">Inicio</a>
             <a href="listas.html">Mis Mascotas</a>
         </nav>
         <button onclick="logout()" class="btn-danger">Cerrar Sesión</button>
@@ -216,7 +216,7 @@
         const userStr = localStorage.getItem('user');
         if (!userStr) {
             alert("Debes iniciar sesión para agendar.");
-            window.location.href = '../initPag.html';
+            window.location.href = '../admin/initPag.html';
             return;
         }
         usuarioActual = JSON.parse(userStr);
@@ -432,7 +432,7 @@
 
             if (response.ok) {
                 alert(`¡Cita agendada con éxito!\nID de confirmación: ${result.citaId}`);
-                window.location.href = '../initPag.html'; // Redirigir al inicio o perfil
+                window.location.href = '../admin/initPag.html'; // Redirigir al inicio o perfil
             } else {
                 alert("Error: " + (result.error || "No se pudo agendar"));
             }

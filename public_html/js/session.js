@@ -65,3 +65,4 @@ function cerrarSesion() {
         window.location.href = '../admin/initPag.html';
     }
 }
+
