@@ -90,7 +90,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// 3. OBTENER PERFIL (Esta es la que faltaba)
+// 3. OBTENER PERFIL 
 exports.getProfile = async (req, res) => {
   try {
     const { id } = req.query; // Leemos ?id=... de la URL
